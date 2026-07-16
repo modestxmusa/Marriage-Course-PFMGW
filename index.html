@@ -188,6 +188,22 @@
         .submit-btn:hover {
             background: #1a252f;
         }
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+            display: none;
+        }
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -230,16 +246,21 @@
             </div>
         </div>
 
-        <!-- New Form Section -->
+        <!-- Updated Form Section -->
         <div class="form-container">
             <div class="form-card">
                 <h2>Share Your Contact Information</h2>
                 <p>Please provide your names so we can organize your responses for your pastor.</p>
-                <form
-                    id="marriageCourseForm"
-                    action="https://script.google.com/macros/s/AKfycbzFyYDNOhJhbdDlaqxYxGu9Oo4GAtSY5MWrO4TUsRCF_fkgYdkWPlwHJfwz0cRLSOjw/exec"
-                    method="POST"
-                >
+
+                <div id="successMessage" class="success-message">
+                    ✅ Information submitted successfully! Thank you.
+                </div>
+
+                <div id="errorMessage" class="error-message">
+                    ❌ There was an error submitting your information. Please try again.
+                </div>
+
+                <form id="marriageCourseForm">
                     <div class="form-group">
                         <label for="modest-name">Modest's Name:</label>
                         <input type="text" id="modest-name" name="modest-name" required placeholder="Your full name">
@@ -259,6 +280,54 @@
     <div class="footer">
         <p>Based on "Preparing for Marriage God's Way" by Wayne A. Mack</p>
     </div>
+
+<script>
+document.getElementById('marriageCourseForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const formData = {
+        'modest-name': document.getElementById('modest-name').value,
+        'francesca-name': document.getElementById('francesca-name').value
+    };
+
+    // Show loading state
+    const submitBtn = document.querySelector('.submit-btn');
+    const originalText = submitBtn.textContent;
+    submitBtn.textContent = 'Submitting...';
+    submitBtn.disabled = true;
+
+    // Submit to Google Apps Script
+    fetch('https://script.google.com/macros/s/AKfycbzFyYDNOhJhbdDlaqxYxGu9Oo4GAtSY5MWrO4TUsRCF_fkgYdkWPlwHJfwz0cRLSOjw/exec', {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(() => {
+        // Show success message
+        document.getElementById('successMessage').style.display = 'block';
+        document.getElementById('errorMessage').style.display = 'none';
+        document.getElementById('marriageCourseForm').reset();
+
+        // Hide success message after 5 seconds
+        setTimeout(() => {
+            document.getElementById('successMessage').style.display = 'none';
+        }, 5000);
+    })
+    .catch(() => {
+        // Show error message
+        document.getElementById('errorMessage').style.display = 'block';
+        document.getElementById('successMessage').style.display = 'none';
+    })
+    .finally(() => {
+        // Reset button
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+    });
+});
+</script>
 
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"8607d2a720d14b038279025b2b5a82e5","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>
