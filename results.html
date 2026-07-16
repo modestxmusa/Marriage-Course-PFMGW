@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Counseling Results - Marriage Preparation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2C3E50;
+            --accent: #C9A962;
+            --light: #F8F5EF;
+            --text: #333;
+            --modest: #3498db;
+            --francesca: #9b59b6;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Crimson Text', Georgia, serif;
+            background: var(--light);
+            color: var(--text);
+            line-height: 1.7;
+        }
+        header {
+            background: var(--primary);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        header h1 { font-family: 'Montserrat', sans-serif; font-weight: 500; letter-spacing: 1px; }
+        header p { font-style: italic; opacity: 0.9; margin-top: 5px; }
+        .nav-bar {
+            background: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .nav-bar a {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.85rem;
+            color: var(--primary);
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+        }
+        .nav-bar a:hover { background: var(--light); }
+        .nav-bar a.active { background: var(--accent); color: white; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 30px 20px; }
+        .intro-card {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border-left: 4px solid var(--accent);
+        }
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .status-card {
+            background: white;
+            border-radius: 8px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+        }
+        .status-card h3 {
+            font-family: 'Montserrat', sans-serif;
+            margin-bottom: 10px;
+        }
+        .status-card.modest h3 { color: var(--modest); }
+        .status-card.francesca h3 { color: var(--francesca); }
+        .status-card .status {
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+        .status-card .status.submitted { background: #d5f4e6; color: #27ae60; }
+        .status-card .status.pending { background: #fef5e7; color: #f39c12; }
+        .status-card .status.not-started { background: #f5f5f5; color: #7f8c8d; }
+        .section {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+        }
+        .section h3 {
+            font-family: 'Montserrat', sans-serif;
+            color: var(--primary);
+            font-size: 1.1rem;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--accent);
+        }
+        .response-group {
+            margin-bottom: 30px;
+        }
+        .response-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .response-header .name-badge {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.85rem;
+            color: white;
+        }
+        .response-header .name-badge.modest { background: var(--modest); }
+        .response-header .name-badge.francesca { background: var(--francesca); }
+        .response-item {
+            margin-bottom: 20px;
+            padding: 20px;
+            border-radius: 6px;
+            background: var(--light);
+        }
+        .response-item p.question {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--text);
+        }
+        .response-item .answer {
+            color: #555;
+            white-space: pre-wrap;
+        }
+        .no-response {
+            color: #999;
+            font-style: italic;
+        }
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        @media (max-width: 768px) {
+            .comparison-grid { grid-template-columns: 1fr; }
+        }
+        .comparison-item {
+            background: var(--light);
+            padding: 15px;
+            border-radius: 6px;
+        }
+        .comparison-item .label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text);
+        }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+        .empty-state h2 { margin-bottom: 15px; }
+        .last-updated {
+            text-align: center;
+            color: #999;
+            font-size: 0.9rem;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Combined Results for Pastor Review</h1>
+        <p>Modest & Francesca - Marriage Counseling Sessions</p>
+    </header>
+    <nav class="nav-bar">
+        <a href="index.html">Home</a>
+        <a href="modest.html">Modest's Responses</a>
+        <a href="francesca.html">Francesca's Responses</a>
+        <a href="results.html" class="active">View Results</a>
+    </nav>
+    <div class="container">
+        <div class="intro-card">
+            <h2>Welcome, Pastor</h2>
+            <p>This page displays the combined questionnaire responses from Modest and Francesca. Review their individual perspectives on key marriage topics to guide your counseling sessions.</p>
+        </div>
+        
+        <div class="status-grid" id="statusGrid">
+            <!-- Status cards will be populated by JS -->
+        </div>
+        
+        <div id="resultsContent">
+            <!-- Results will be populated by JS -->
+        </div>
+        
+        <p class="last-updated" id="lastUpdated"></p>
+    </div>
+
+    <script src="data.js"></script>
+    <script>
+        function renderResults() {
+            const data = DataManager.getData();
+            const modestData = data.modest || {};
+            const francescaData = data.francesca || {};
+            
+            // Render status grid
+            const statusGrid = document.getElementById('statusGrid');
+            statusGrid.innerHTML = `
+                <div class="status-card">
+                    <h3>Modest</h3>
+                    <div class="status ${modestData._submitted ? 'submitted' : Object.keys(modestData).length > 0 ? 'pending' : 'not-started'}">
+                        ${modestData._submitted ? '✓ Submitted' : Object.keys(modestData).length > 0 ? '○ In Progress' : '○ Not Started'}
+                    </div>
+                    ${modestData._submittedAt ? '<p style="margin-top:10px;font-size:0.8rem;color:#666;">' + new Date(modestData._submittedAt).toLocaleString() + '</p>' : ''}
+                </div>
+                <div class="status-card">
+                    <h3>Francesca</h3>
+                    <div class="status ${francescaData._submitted ? 'submitted' : Object.keys(francescaData).length > 0 ? 'pending' : 'not-started'}">
+                        ${francescaData._submitted ? '✓ Submitted' : Object.keys(francescaData).length > 0 ? '○ In Progress' : '○ Not Started'}
+                    </div>
+                    ${francescaData._submittedAt ? '<p style="margin-top:10px;font-size:0.8rem;color:#666;">' + new Date(francescaData._submittedAt).toLocaleString() + '</p>' : ''}
+                </div>
+            `;
+            
+            // Question mappings
+            const sections = [
+                {
+                    title: 'Relationship History',
+                    questions: [
+                        { q: 'How long have you known your partner?', keys: ['history_q1'] },
+                        { q: 'How did you come to know your partner?', keys: ['history_q2'] },
+                        { q: 'Best memories from dating experience', keys: ['history_q3'] },
+                        { q: 'Worst memories from dating experience', keys: ['history_q4'] },
+                        { q: 'Activities you like to do together', keys: ['history_q5'] },
+                        { q: 'Views on physical involvement in relationships', keys: ['history_q6', 'history_q7'] },
+                        { q: 'Role of the Lord in your relationship', keys: ['history_q8'] },
+                        { q: 'Parents\' perspectives on your marriage', keys: ['history_q9'] },
+                        { q: 'What to tell your intended about the past', keys: ['history_q10'] }
+                    ]
+                },
+                {
+                    title: 'Relationship Evaluation',
+                    questions: [
+                        { q: 'One word describing your relationship', keys: ['eval_q1'] },
+                        { q: 'Strong points of your relationship', keys: ['eval_q3'] },
+                        { q: 'Weak points of your relationship', keys: ['eval_q4'] },
+                        { q: 'Important factors for marriage success', keys: ['eval_q6'] },
+                        { q: 'What you bring to the marriage', keys: ['eval_q7'] },
+                        { q: 'What your partner brings to the marriage', keys: ['eval_q8'] }
+                    ]
+                },
+                {
+                    title: 'Marriage Expectations',
+                    questions: [
+                        { q: 'Thoughts on the word "marriage"', keys: ['expect_q1'] },
+                        { q: 'Biblical reasons for marriage', keys: ['expect_q2'] },
+                        { q: 'Goals for your marriage', keys: ['expect_q3'] },
+                        { q: 'Expectations for your partner', keys: ['expect_q4'] },
+                        { q: 'Partner\'s expectations for you', keys: ['expect_q6'] }
+                    ]
+                },
+                {
+                    title: 'Reasons for Marriage',
+                    questions: [
+                        { q: 'Ten reasons why you want to marry your partner', keys: ['reasons_q1'] },
+                        { q: 'How to know someone is the one', keys: ['reasons_q2'] },
+                        { q: 'Importance of attraction and what attracts you', keys: ['reasons_q3'] },
+                        { q: 'Being equally yoked (2 Cor 6:14-18)', keys: ['reasons_q4'] }
+                    ]
+                },
+                {
+                    title: 'Character Qualities',
+                    questions: [
+                        { q: 'Character ratings (patience, acceptance, etc.)', keys: ['char_patient', 'char_accepting', 'char_stubborn', 'char_annoyed', 'char_resentful', 'char_forgiving', 'char_dominant', 'char_selfcentered', 'char_gentle', 'char_listener', 'char_reliable', 'char_affectionate'] }
+                    ]
+                },
+                {
+                    title: 'Spiritual Convictions',
+                    questions: [
+                        { q: 'Understanding of God', keys: ['spiritual_q1'] },
+                        { q: 'Understanding of Jesus Christ', keys: ['spiritual_q2'] },
+                        { q: 'Your relationship with God', keys: ['spiritual_q3'] },
+                        { q: 'What it means to be a Christian', keys: ['spiritual_q4'] },
+                        { q: 'Assurance of faith', keys: ['spiritual_q5'] },
+                        { q: 'View of the Bible', keys: ['spiritual_q6'] },
+                        { q: 'Understanding of sin', keys: ['spiritual_q7', 'spiritual_q8', 'spiritual_q9'] },
+                        { q: 'Prayer life', keys: ['spiritual_q11'] },
+                        { q: 'Chief goals in life', keys: ['spiritual_q12'] },
+                        { q: 'Church involvement', keys: ['spiritual_q13'] },
+                        { q: 'Christian fellowship', keys: ['spiritual_q14'] },
+                        { q: 'Promoting spiritual growth together', keys: ['spiritual_q15'] }
+                    ]
+                },
+                {
+                    title: 'Love\'s Language',
+                    questions: [
+                        { q: 'How love is expressed to you (ratings)', keys: ['love_helping', 'love_time', 'love_words', 'love_touch', 'love_concern', 'love_loyal', 'love_gifts'] },
+                        { q: 'Childhood experience of love', keys: ['love_childhood'] },
+                        { q: 'When you\'re "down", you want your partner to...', keys: ['love_down'] },
+                        { q: 'After an argument, you want...', keys: ['love_argument'] },
+                        { q: 'How you show love to your partner', keys: ['love_show'] }
+                    ]
+                },
+                {
+                    title: 'Conflict Resolution',
+                    questions: [
+                        { q: 'Conflict resolution principles ratings', keys: ['conflict_q1', 'conflict_q2', 'conflict_q3', 'conflict_q4', 'conflict_q5', 'conflict_q6', 'conflict_q7', 'conflict_q8'] }
+                    ]
+                },
+                {
+                    title: 'Family Finances',
+                    questions: [
+                        { q: 'Current financial situation', keys: ['finance_q1'] },
+                        { q: 'Spending habits and priorities', keys: ['finance_q2'] },
+                        { q: 'Views on debt', keys: ['finance_q3'] },
+                        { q: 'Financial goals for first year of marriage', keys: ['finance_q4'] },
+                        { q: 'How decisions about money should be made', keys: ['finance_q5'] }
+                    ]
+                },
+                {
+                    title: 'Final Reflection',
+                    questions: [
+                        { q: 'What you\'ve learned about yourself', keys: ['final_q1'] },
+                        { q: 'What you\'ve learned about your partner', keys: ['final_q2'] },
+                        { q: 'Areas of concern for your marriage', keys: ['final_q3'] },
+                        { q: 'What you\'re most excited about', keys: ['final_q4'] },
+                        { q: 'Questions for the pastor', keys: ['final_q5'] }
+                    ]
+                }
+            ];
+            
+            const resultsContent = document.getElementById('resultsContent');
+            let html = '';
+            
+            sections.forEach(section => {
+                html += `<div class="section">`;
+                html += `<h3>${section.title}</h3>`;
+                
+                section.questions.forEach(question => {
+                    html += `<div class="response-group">`;
+                    html += `<p class="question" style="font-weight:600;margin-bottom:15px;">${question.q}</p>`;
+                    
+                    // Modest's response
+                    const modestAnswer = getAnswer(modestData, question.keys);
+                    html += `<div class="response-item" style="margin-bottom:10px;">`;
+                    html += `<span class="name-badge modest">Modest</span>`;
+                    html += `<div class="answer">${modestAnswer || '<span class="no-response">No response yet</span>'}</div>`;
+                    html += `</div>`;
+                    
+                    // Francesca's response
+                    const francescaAnswer = getAnswer(francescaData, question.keys);
+                    html += `<div class="response-item">`;
+                    html += `<span class="name-badge francesca">Francesca</span>`;
+                    html += `<div class="answer">${francescaAnswer || '<span class="no-response">No response yet</span>'}</div>`;
+                    html += `</div>`;
+                    
+                    html += `</div>`;
+                });
+                
+                html += `</div>`;
+            });
+            
+            resultsContent.innerHTML = html;
+            
+            // Last updated
+            const lastUpdated = document.getElementById('lastUpdated');
+            lastUpdated.textContent = data.lastUpdated ? 'Last updated: ' + new Date(data.lastUpdated).toLocaleString() : '';
+        }
+        
+        function getAnswer(data, keys) {
+            for (let key of keys) {
+                if (data[key] && data[key].trim()) {
+                    return data[key];
+                }
+            }
+            return null;
+        }
+        
+        function hasResponses(data) {
+            return data && Object.keys(data).length > 0;
+        }
+        
+        document.addEventListener('DOMContentLoaded', renderResults);
+    </script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"8607d2a720d14b038279025b2b5a82e5","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+</body>
+</html>
