@@ -133,6 +133,61 @@
             color: #666;
             font-size: 0.9rem;
         }
+
+        /* Form styling to match your design */
+        .form-container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        .form-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            padding: 40px;
+        }
+        .form-card h2 {
+            color: var(--primary);
+            font-size: 1.8rem;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--accent);
+        }
+        .form-group {
+            margin-bottom: 25px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+        .form-group input[type="text"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 4px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        .form-group input[type="text"]:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        .submit-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px 30px;
+            font-size: 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-family: 'Georgia', serif;
+        }
+        .submit-btn:hover {
+            background: #1a252f;
+        }
     </style>
 </head>
 <body>
@@ -174,27 +229,37 @@
                 </div>
             </div>
         </div>
+
+        <!-- New Form Section -->
+        <div class="form-container">
+            <div class="form-card">
+                <h2>Share Your Contact Information</h2>
+                <p>Please provide your names so we can organize your responses for your pastor.</p>
+                <form
+                    id="marriageCourseForm"
+                    action="https://script.google.com/macros/s/AKfycbyYCfZpuDh7RbXSNan4l9mOlbUf5DAbrgiuS-xmnEshCTIMpApfE1xFxrk6zt5JVygL1w/exec"
+                    method="POST"
+                >
+                    <div class="form-group">
+                        <label for="modest-name">Modest's Name:</label>
+                        <input type="text" id="modest-name" name="modest-name" required placeholder="Your full name">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="francesca-name">Francesca's Name:</label>
+                        <input type="text" id="francesca-name" name="francesca-name" required placeholder="Your full name">
+                    </div>
+
+                    <button type="submit" class="submit-btn">Submit Information</button>
+                </form>
+            </div>
+        </div>
     </div>
-  <form
-    id="marriageCourseForm"
-    action="https://script.google.com/macros/s/AKfycbw0UlljN0vXa5F9qk_LrtVsVYRE0QO1aA9_lWDDgGszN4V7VwKjJi2yIDYeEbrW0pbWlQ/exec"
-    method="POST"
-  >
-    <!-- Input for Modest -->
-    <label for="modest-name">Modest's Name:</label>
-    <input type="text" id="modest-name" name="modest-name" required>
 
-    <!-- Input for Francesca -->
-    <label for="francesca-name">Francesca's Name:</label>
-    <input type="text" id="francesca-name" name="francesca-name" required>
-
-    <!-- Add more questions as needed -->
-    <button type="submit">Submit Answers</button>
-  </form>
-    
     <div class="footer">
         <p>Based on "Preparing for Marriage God's Way" by Wayne A. Mack</p>
     </div>
+
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"8607d2a720d14b038279025b2b5a82e5","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>
 </html>
