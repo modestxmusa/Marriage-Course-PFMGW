@@ -865,7 +865,148 @@
         </form>
     </div>
 
-    <script src="data.js"></script>
+    <script>
+        // ============================================================
+        // DataManager — localStorage wrapper for partner questionnaire data
+        // ============================================================
+        var DataManager = (function() {
+            var STORAGE_KEY = 'marriageCounseling';
+            
+            function getAll() {
+                try {
+                    var raw = localStorage.getItem(STORAGE_KEY);
+                    return raw ? JSON.parse(raw) : {};
+                } catch(e) { return {}; }
+            }
+            
+            function saveAll(data) {
+                try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
+            }
+            
+            function getPartner(name) {
+                var all = getAll();
+                return all[name] || {};
+            }
+            
+            function savePartner(name, partnerData) {
+                var all = getAll();
+                all[name] = partnerData;
+                saveAll(all);
+            }
+            
+            function getBothPartners() {
+                var all = getAll();
+                return {
+                    modest: all['modest'] || {},
+                    francesca: all['francesca'] || {}
+                };
+            }
+            
+            return {
+                getPartner: getPartner,
+                savePartner: savePartner,
+                getBothPartners: getBothPartners
+            };
+        })();
+
+        // ============================================================
+        // Notification system
+        // ============================================================
+        function getNotificationStyles() {
+            return '<style id="notif-style">' +
+                '.notif-overlay{position:fixed;top:0;left:0;width:100%;height:100%;' +
+                'background:rgba(0,0,0,.5);display:flex;justify-content:center;' +
+                'align-items:center;z-index:9999;}' +
+                '.notif-toast{background:#fff;border-radius:8px;padding:18px 28px;' +
+                'box-shadow:0 4px 20px rgba(0,0,0,.25);max-width:380px;width:90%;' +
+                'text-align:center;font-family:"Montserrat",sans-serif;}' +
+                '.notif-toast h4{margin-bottom:6px;font-size:.95rem;}' +
+                '.notif-toast p{color:#555;font-size:.85rem;margin:0;}' +
+                '.notif-success{border-left:4px solid #27ae60;}' +
+                '.notif-success h4{color:#27ae60;}' +
+                '.notif-error{border-left:4px solid #c0392b;}' +
+                '.notif-error h4{color:#c0392b;}' +
+                '.notif-info{border-left:4px solid #2980b9;}' +
+                '.notif-info h4{color:#2980b9;}' +
+                '</style>';
+        }
+
+        function showNotification(message, type, duration) {
+            if (document.getElementById('notif-style')) {} else {
+                document.head.innerHTML += getNotificationStyles();
+            }
+            var icon = type === 'success' ? '&#10004; ' : type === 'error' ? '&#10006; ' : '&#8505; ';
+            var title = type === 'success' ? 'Success' : type === 'error' ? 'Error' : 'Info';
+            var overlay = document.createElement('div');
+            overlay.className = 'notif-overlay';
+            overlay.innerHTML = '<div class="notif-toast notif-' + type + '">' +
+                '<h4>' + icon + title + '</h4>' +
+                '<p>' + message + '</p></div>';
+            document.body.appendChild(overlay);
+            overlay.addEventListener('click', function() { dismiss(); });
+            var timer = duration || 3500;
+            var t = setTimeout(dismiss, timer);
+            function dismiss() {
+                clearTimeout(t);
+                if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+            }
+        }
+
+        // ============================================================
+        // Form helpers
+        // ============================================================
+        function collectFormData(form) {
+            var data = {};
+            for (var i = 0; i < form.elements.length; i++) {
+                var el = form.elements[i];
+                if (el.name) {
+                    if (el.type === 'radio') {
+                        if (el.checked) data[el.name] = el.value;
+                    } else if (el.type === 'checkbox') {
+                        if (!data[el.name]) data[el.name] = [];
+                        if (el.checked) data[el.name].push(el.value);
+                    } else {
+                        data[el.name] = el.value;
+                    }
+                }
+            }
+            return data;
+        }
+
+        function validateForm(form) {
+            var required = ['history_q1','history_q2','history_q3','history_q4','history_q5',
+                'history_q6','history_q7','history_q8','history_q9','history_q10',
+                'eval_q1','eval_q2','eval_q3','eval_q4','eval_q5','eval_q6','eval_q7','eval_q8',
+                'expect_q1','expect_q2','expect_q3','expect_q4','expect_q5','expect_q6',
+                'reasons_q1','reasons_q2','reasons_q3','reasons_q4',
+                'spiritual_q1','spiritual_q2','spiritual_q3','spiritual_q4','spiritual_q5',
+                'spiritual_q6','spiritual_q7','spiritual_q8','spiritual_q9','spiritual_q10',
+                'spiritual_q11','spiritual_q12','spiritual_q13','spiritual_q14','spiritual_q15',
+                'love_helping','love_time','love_words','love_touch','love_concern',
+                'love_loyal','love_gifts','love_childhood','love_down','love_argument','love_show',
+                'conflict_q1','conflict_q2','conflict_q3','conflict_q4','conflict_q5',
+                'conflict_q6','conflict_q7','conflict_q8',
+                'finance_q1','finance_q2','finance_q3','finance_q4','finance_q5',
+                'final_q1','final_q2','final_q3','final_q4','final_q5'];
+            var chars = ['char_patient','char_accepting','char_stubborn','char_annoyed',
+                'char_resentful','char_forgiving','char_dominant','char_selfcentered',
+                'char_gentle','char_listener','char_reliable','char_affectionate'];
+            var allRequired = required.concat(chars);
+            var valid = true;
+            for (var i = 0; i < allRequired.length; i++) {
+                var field = form.elements[allRequired[i]];
+                if (field && (field.value === '' || field.value === null)) {
+                    field.classList.add('error');
+                    valid = false;
+                } else if (field) {
+                    field.classList.remove('error');
+                }
+            }
+            return valid;
+        }
+        // expose to global scope
+        window.DataManager = DataManager;
+    </script>
     <script>
         document.head.innerHTML += getNotificationStyles();
         
@@ -921,11 +1062,21 @@
             }
             
             const data = collectFormData(form);
+            data._submitted = true;
+            data._submittedAt = new Date().toISOString();
+            
             DataManager.savePartner('modest', data);
             showNotification('Your responses have been submitted successfully!', 'success');
             
+            // Also store a mirror for the results page: modest_submitted and francesca_submitted
+            try {
+                var all = JSON.parse(localStorage.getItem('marriageCounseling') || '{}');
+                all['modest_submitted'] = all['modest'] || {};
+                localStorage.setItem('marriageCounseling', JSON.stringify(all));
+            } catch(e) {}
+            
             setTimeout(() => {
-                window.location.href = 'index.html';
+                window.location.href = 'results.html';
             }, 2000);
         }
         
@@ -934,6 +1085,7 @@
             updateStatus();
         });
     </script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"8607d2a720d14b038279025b2b5a82e5","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"8607d2a720d14b038279025b2b5a82e5","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>
 </html>
