@@ -29,11 +29,11 @@
 
 const CONFIG = {
     // Replace with your OAuth Client ID
-    GOOGLE_CLIENT_ID: 'YOUR_OAUTH_CLIENT_ID.apps.googleusercontent.com',
+    GOOGLE_CLIENT_ID: '88174880511-m9jq7tknona72s1828r6rarge4863rtm.apps.googleusercontent.com',
     
     // Replace with your API Key
-    GOOGLE_API_KEY: 'YOUR_API_KEY_HERE',
+    GOOGLE_API_KEY: 'AIzaSyAA-2q08YBXVdeHnWvifljAJ3L9mhot1g0',
     
     // Replace with your Google Drive Folder ID
-    GDRIVE_FOLDER_ID: 'YOUR_FOLDER_ID_HERE'
+    GDRIVE_FOLDER_ID: '88174880511-m9jq7tknona72s1828r6rarge4863rtm.apps.googleusercontent.com'
 };
