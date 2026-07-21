@@ -5,6 +5,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Francesca's Questionnaire - Marriage Counseling</title>
     <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
+    <!--
+    ╔═══════════════════════════════════════════════════════════════════════════╗
+    ║  SECURE SETUP INSTRUCTIONS - READ BEFORE USE                            ║
+    ╠═══════════════════════════════════════════════════════════════════════════╣
+    ║  IMPORTANT: Never commit config.js or any file containing credentials    ║
+    ║  to version control (GitHub, etc.)                                     ║
+    ╠═══════════════════════════════════════════════════════════════════════════╣
+    ║  STEP 1: Create a config.js file in the same folder as this HTML:        ║
+    ║                                                                           ║
+    ║  --- config.js ---                                                       ║
+    ║  const CONFIG = {                                                        ║
+    ║    GOOGLE_CLIENT_ID: 'YOUR_OAUTH_CLIENT_ID.apps.googleusercontent.com',   ║
+    ║    GOOGLE_API_KEY: 'AIzaSy...',                                          ║
+    ║    GDRIVE_FOLDER_ID: 'YOUR_FOLDER_ID'                                    ║
+    ║  };                                                                      ║
+    ║  --- end config.js ---                                                   ║
+    ║                                                                           ║
+    ║  STEP 2: Get your Google Drive Folder ID:                                ║
+    ║  - Open drive.google.com, navigate to your folder                       ║
+    ║  - The ID is after /folders/ in the URL                                 ║
+    ║                                                                           ║
+    ║  STEP 3: Get Google Cloud credentials:                                   ║
+    ║  - Go to console.cloud.google.com → APIs & Services → Credentials       ║
+    ║  - Create OAuth Client ID (Web application type)                        ║
+    ║  - Create API Key                                                       ║
+    ║  - Add your deployed domain to OAuth authorized origins                 ║
+    ║                                                                           ║
+    ║  STEP 4: Add Google Identity Services library:                          ║
+    ║  - Include this in your HTML <head>:                                    ║
+    ║  <script src="https://accounts.google.com/gsi/client" async defer></script>║
+    ╚═══════════════════════════════════════════════════════════════════════════╝
+    -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
         :root {
             --primary: #2C3E50;
@@ -12,13 +45,15 @@
             --light: #F8F5EF;
             --text: #333;
             --error: #c0392b;
+            --success: #27ae60;
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * { box-sizing: border-box; }
         body {
             font-family: 'Crimson Text', Georgia, serif;
             background: var(--light);
             color: var(--text);
             line-height: 1.7;
+            margin: 0;
         }
         header {
             background: var(--primary);
@@ -26,8 +61,9 @@
             padding: 30px 20px;
             text-align: center;
         }
-        header h1 { font-family: 'Montserrat', sans-serif; font-weight: 500; letter-spacing: 1px; }
-        header p { font-style: italic; opacity: 0.9; margin-top: 5px; }
+        header h1 { margin: 0 0 5px; font-size: 2rem; }
+        header p { margin: 0; opacity: 0.9; }
+        .container { max-width: 800px; margin: 0 auto; padding: 20px; }
         .nav-bar {
             background: white;
             padding: 15px 20px;
@@ -35,6 +71,7 @@
             justify-content: center;
             gap: 20px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            flex-wrap: wrap;
         }
         .nav-bar a {
             font-family: 'Montserrat', sans-serif;
@@ -46,17 +83,15 @@
             transition: background 0.2s;
         }
         .nav-bar a:hover { background: var(--light); }
-        .nav-bar a.active { background: var(--accent); color: white; }
-        .container { max-width: 800px; margin: 0 auto; padding: 30px 20px; }
         .intro-card {
             background: white;
             border-radius: 8px;
             padding: 30px;
             margin-bottom: 30px;
             border-left: 4px solid var(--accent);
+            box-shadow: 0 2px 15px rgba(0,0,0,0.05);
         }
-        .intro-card h2 { font-family: 'Montserrat', sans-serif; color: var(--primary); margin-bottom: 15px; }
-        .intro-card p { color: #666; }
+        .intro-card h2 { margin-top: 0; color: var(--primary); }
         .section {
             background: white;
             border-radius: 8px;
@@ -69,6 +104,7 @@
             color: var(--primary);
             font-size: 1.1rem;
             padding-bottom: 10px;
+            margin-top: 0;
             margin-bottom: 20px;
             border-bottom: 2px solid var(--accent);
         }
@@ -92,14 +128,14 @@
             font-family: 'Crimson Text', serif;
             font-size: 1rem;
             transition: border-color 0.2s;
+            background: white;
         }
         input:focus, textarea:focus, select:focus {
             outline: none;
             border-color: var(--accent);
         }
-        textarea { min-height: 120px; resize: vertical; }
         input.error, textarea.error, select.error { border-color: var(--error); }
-        .rating-group { display: flex; flex-wrap: wrap; gap: 20px; align-items: center; }
+        textarea { min-height: 120px; resize: vertical; }
         .rating-item {
             display: flex;
             align-items: center;
@@ -107,16 +143,18 @@
             padding: 8px 12px;
             background: var(--light);
             border-radius: 4px;
+            margin-bottom: 8px;
         }
-        .rating-item input { width: auto; }
+        .rating-item input { width: auto; margin-right: 8px; }
+        .rating-item label { margin: 0; font-weight: normal; }
         .submit-section {
-            background: linear-gradient(135deg, var(--primary) 0%, #1a252f 100%);
+            background: white;
             border-radius: 8px;
             padding: 30px;
             text-align: center;
             margin-top: 30px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.05);
         }
-        .submit-section p { color: rgba(255,255,255,0.9); margin-bottom: 20px; }
         button[type="submit"], .btn-save {
             font-family: 'Montserrat', sans-serif;
             background: var(--accent);
@@ -126,25 +164,94 @@
             font-size: 1rem;
             border-radius: 6px;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: transform 0.2s, background 0.2s;
         }
         button[type="submit"]:hover, .btn-save:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(201, 169, 98, 0.4);
+            background: #b8964f;
         }
         .btn-save {
             background: #7f8c8d;
             margin-right: 10px;
         }
+        .btn-save:hover { background: #6c7a7d; }
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
         .status {
             text-align: center;
-            padding: 10px;
-            border-radius: 4px;
+            padding: 12px 20px;
+            border-radius: 6px;
             margin-bottom: 20px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.9rem;
         }
-        .status.submitted { background: #d5f4e6; color: #27ae60; }
-        .status.in-progress { background: #fef5e7; color: #f39c12; }
-        .status.not-started { background: #f5f5f5; color: #7f8c8d; }
+        .status.info { background: #e3f2fd; color: #1565c0; }
+        .status.success { background: #e8f5e9; color: #2e7d32; }
+        .status.error { background: #ffebee; color: #c62828; }
+        .status.warning { background: #fff8e1; color: #f57f17; }
+        /* Auth panel */
+        .auth-panel {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .auth-panel h2 { margin-top: 0; }
+        .auth-panel p { opacity: 0.9; margin-bottom: 20px; }
+        .auth-panel button {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .auth-panel button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.3);
+        }
+        .user-info img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+        }
+        .sign-out-btn {
+            background: transparent;
+            border: 1px solid white;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+        .sign-out-btn:hover { background: rgba(255,255,255,0.2); }
+        .hidden { display: none; }
+        .setup-warning {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            color: #856404;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .setup-warning h3 { margin-top: 0; color: #856404; }
     </style>
 </head>
 <body>
@@ -154,71 +261,88 @@
     </header>
     <nav class="nav-bar">
         <a href="index.html">Home</a>
-        <a href="francesca.html" class="active">My Responses</a>
-        <a href="modest.html">Francesca's Responses</a>
+        <a href="modest.html">Modest's Responses</a>
         <a href="results.html">View Results</a>
     </nav>
     <div class="container">
         <div id="status" class="status"></div>
         
+        <!-- SETUP WARNING (shown if config missing) -->
+        <div id="setupWarning" class="setup-warning hidden">
+            <h3>⚠️ Setup Required</h3>
+            <p>Create a <code>config.js</code> file with your Google credentials to enable cloud saving.</p>
+            <p>See the instructions in the HTML &lt;head&gt; section or check SETUP.md for details.</p>
+        </div>
+        
+        <!-- AUTH PANEL -->
+        <div id="authPanel" class="auth-panel">
+            <h2>🔒 Sign in with Google</h2>
+            <p>Sign in to save your progress to Google Drive</p>
+            <button id="signInBtn" onclick="initGoogleSignIn()">Sign in with Google</button>
+            <div id="userInfo" class="user-info hidden">
+                <img id="userAvatar" src="" alt="Avatar">
+                <span id="userName"></span>
+                <button class="sign-out-btn" onclick="signOut()">Sign out</button>
+            </div>
+        </div>
+        
         <div class="intro-card">
             <h2>Session 1: Getting Started</h2>
-            <p>Take time to carefully and prayerfully fill out this questionnaire. Be honest and thoughtful in your responses. After completing, discuss your reflections with Modest.</p>
         </div>
 
-        <form id="counselingForm" onsubmit="handleSubmit(event)">
-            
+        <form id="questionnaireForm">
+        
             <!-- RELATIONSHIP HISTORY -->
             <div class="section">
                 <h3>Relationship History</h3>
                 
                 <div class="question">
-                    <p>1. How long have you known Modest?</p>
+                    <p>1. How long have you known each other?</p>
                     <textarea name="history_q1" placeholder="Share about how long you've known each other..."></textarea>
                 </div>
                 
                 <div class="question">
-                    <p>2. How did you come to know Modest?</p>
+                    <p>2. How did you meet and how did your relationship begin?</p>
                     <textarea name="history_q2" placeholder="Describe how you met and how your relationship began..."></textarea>
                 </div>
                 
                 <div class="question">
-                    <p>3. List three of your best memories from your dating experience with Modest.</p>
+                    <p>3. List the key milestones in your relationship</p>
                     <textarea name="history_q3" placeholder="1.&#10;2.&#10;3."></textarea>
                 </div>
                 
                 <div class="question">
-                    <p>4. List three of your worst memories from your dating experience with Modest.</p>
+                    <p>4. What activities and interests do you enjoy together?</p>
                     <textarea name="history_q4" placeholder="1.&#10;2.&#10;3."></textarea>
                 </div>
                 
                 <div class="question">
-                    <p>5. List several kinds of things you and Modest like to do together.</p>
+                    <p>5. What physical boundaries and standards have you set?</p>
                     <textarea name="history_q5" placeholder="Share the activities and interests you enjoy together..."></textarea>
                 </div>
                 
                 <div class="question">
-                    <p>6. What place should physical contact and physical involvement play in a serious relationship? What guidelines or standards should be allowed?</p>
+                    <p>6. Reflect on your physical relationship boundaries</p>
                     <textarea name="history_q6" placeholder="Reflect on physical boundaries and standards..."></textarea>
                 </div>
                 
                 <div class="question">
-                    <p>7. What place does physical involvement play in your relationship? Do you agree on this? Has this been a source of contention?</p>
+                    <p>7. How is God involved in your relationship?</p>
                     <textarea name="history_q7" placeholder="Reflect on your physical relationship boundaries..."></textarea>
                 </div>
                 
                 <div class="question">
-                    <p>8. What place should the Lord play in a couple's relationship? What place does He play in your relationship?</p>
+                    <p>8. What are your family's perspectives on your marriage?</p>
                     <textarea name="history_q8" placeholder="Share how God is involved in your relationship..."></textarea>
                 </div>
                 
                 <div class="question">
-                    <p>9. What do your parents think about your getting married? What do Francesca's parents think?</p>
+                    <p>9. How transparent and honest are you before marriage?</p>
                     <textarea name="history_q9" placeholder="Share about family perspectives on your marriage..."></textarea>
                 </div>
                 
                 <div class="question">
-                    <p>10. What should a person tell their intended about their past, sins, struggles, or limitations? Are there legitimate reasons for not sharing?</p>
+                    <p>10. Reflect on areas of complete transparency</p>
                     <textarea name="history_q10" placeholder="Reflect on transparency and honesty before marriage..."></textarea>
                 </div>
             </div>
@@ -228,42 +352,42 @@
                 <h3>Relationship Evaluation</h3>
                 
                 <div class="question">
-                    <p>1. If you were asked to describe your relationship in one word, what would that word be?</p>
+                    <p>1. Describe your relationship in one word</p>
                     <input type="text" name="eval_q1" placeholder="One word that describes your relationship">
                 </div>
                 
                 <div class="question">
-                    <p>2. What word do you think Modest would use to describe your relationship?</p>
+                    <p>2. Francesca might describe it as</p>
                     <input type="text" name="eval_q2" placeholder="One word Modest might use">
                 </div>
                 
                 <div class="question">
-                    <p>3. What are some of the strong points of your relationship?</p>
+                    <p>3. What are the strengths of your relationship?</p>
                     <textarea name="eval_q3" placeholder="Share the strengths in your relationship..."></textarea>
                 </div>
                 
                 <div class="question">
-                    <p>4. What are some of the weak points of your relationship?</p>
+                    <p>4. What areas need growth?</p>
                     <textarea name="eval_q4" placeholder="Reflect on areas that need growth..."></textarea>
                 </div>
                 
                 <div class="question">
-                    <p>5. What have you done to strengthen these weak points?</p>
+                    <p>5. What steps have you taken to address weaknesses?</p>
                     <textarea name="eval_q5" placeholder="Share steps you've taken to address weaknesses..."></textarea>
                 </div>
                 
                 <div class="question">
-                    <p>6. What do you think are the most important factors that will make a marriage a success?</p>
+                    <p>6. What are keys to a successful marriage?</p>
                     <textarea name="eval_q6" placeholder="Share your thoughts on keys to marriage success..."></textarea>
                 </div>
                 
                 <div class="question">
-                    <p>7. What do you bring to the marriage that will help make it a success?</p>
+                    <p>7. What strengths do you bring to the relationship?</p>
                     <textarea name="eval_q7" placeholder="Reflect on your strengths and contributions..."></textarea>
                 </div>
                 
                 <div class="question">
-                    <p>8. What do you think Modest brings to the marriage that will help make it a success?</p>
+                    <p>8. What strengths does Francesca bring?</p>
                     <textarea name="eval_q8" placeholder="Reflect on Francesca's strengths..."></textarea>
                 </div>
             </div>
@@ -273,57 +397,57 @@
                 <h3>Marriage Expectations</h3>
                 
                 <div class="question">
-                    <p>1. What thoughts does the word "marriage" bring to you?</p>
+                    <p>1. How do you feel about marriage?</p>
                     <textarea name="expect_q1" placeholder="Share your feelings and thoughts about marriage..."></textarea>
                 </div>
                 
                 <div class="question">
-                    <p>2. What are biblical reasons for marriage? Why do you want to get married?</p>
+                    <p>2. What is the biblical purpose of marriage?</p>
                     <textarea name="expect_q2" placeholder="Reflect on the biblical purpose of marriage..."></textarea>
                 </div>
                 
                 <div class="question">
-                    <p>3. What goals do you have for your marriage?</p>
+                    <p>3. What are your hopes and plans for your future together?</p>
                     <textarea name="expect_q3" placeholder="Share your hopes and plans for your future together..."></textarea>
                 </div>
                 
                 <div class="question">
-                    <p>4. What expectations do you have for your partner (Modest) in marriage?</p>
+                    <p>4. What are your expectations for Modest?</p>
                     <textarea name="expect_q4" placeholder="Share your expectations for Modest..."></textarea>
                 </div>
                 
                 <div class="question">
-                    <p>5. What expectations have you had for Modest? How has she fulfilled or not fulfilled them?</p>
+                    <p>5. How have your expectations changed over time?</p>
                     <textarea name="expect_q5" placeholder="Reflect on past and current expectations..."></textarea>
                 </div>
                 
                 <div class="question">
-                    <p>6. What expectations do you think Modest has for you in marriage?</p>
+                    <p>6. What do you understand about Francesca's expectations?</p>
                     <textarea name="expect_q6" placeholder="Share your understanding of Francesca's expectations..."></textarea>
                 </div>
             </div>
 
-            <!-- SESSION 2: GETTING TO KNOW EACH OTHER -->
+            <!-- REASONS FOR MARRYING -->
             <div class="section">
-                <h3>Session 2: Getting to Know Each Other Better</h3>
+                <h3>Reasons for Marrying</h3>
                 
                 <div class="question">
-                    <p>7. List ten reasons why you want to marry Modest.</p>
+                    <p>1. List at least 10 reasons you want to marry</p>
                     <textarea name="reasons_q1" placeholder="1.&#10;2.&#10;3.&#10;4.&#10;5.&#10;6.&#10;7.&#10;8.&#10;9.&#10;10."></textarea>
                 </div>
                 
                 <div class="question">
-                    <p>8. How can you know that a certain person is the one for you to marry? What guidelines should be used?</p>
+                    <p>2. How do you know this is God's will for your marriage?</p>
                     <textarea name="reasons_q2" placeholder="Share your thoughts on knowing God's will for marriage..."></textarea>
                 </div>
                 
                 <div class="question">
-                    <p>9. How important is it to find the other person attractive? What attracts you to Modest?</p>
+                    <p>3. What role does physical attraction play?</p>
                     <textarea name="reasons_q3" placeholder="Reflect on physical attraction and other qualities..."></textarea>
                 </div>
                 
                 <div class="question">
-                    <p>10. How does 2 Corinthians 6:14-18 relate to the issue of whom to marry? Does Modest meet the directives?</p>
+                    <p>4. Are you equally yoked? Why or why not?</p>
                     <textarea name="reasons_q4" placeholder="Reflect on being equally yoked..."></textarea>
                 </div>
             </div>
@@ -331,156 +455,157 @@
             <!-- PERSONAL CHARACTER INVENTORY -->
             <div class="section">
                 <h3>Personal Character Inventory</h3>
-                <p style="margin-bottom: 20px; color: #666;">Rate yourself on a scale of 0-5 (5 = highest, 0 = lowest):</p>
+                <p>Rate yourself 1-5 (1=rarely, 5=almost always):</p>
                 
                 <div class="question">
-                    <p>Rate your character qualities:</p>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;">
-                        <div class="rating-group" style="flex-direction: column; align-items: flex-start;">
-                            <label>1. Patient</label>
-                            <select name="char_patient">
-                                <option value="">Select...</option>
-                                <option value="5">5 - Very Patient</option>
-                                <option value="4">4 - Often Patient</option>
-                                <option value="3">3 - Sometimes Patient</option>
-                                <option value="2">2 - Rarely Patient</option>
-                                <option value="1">1 - Not Patient</option>
-                                <option value="0">0 - Never</option>
-                            </select>
-                        </div>
-                        <div class="rating-group" style="flex-direction: column; align-items: flex-start;">
-                            <label>2. Accepting</label>
-                            <select name="char_accepting">
-                                <option value="">Select...</option>
-                                <option value="5">5</option>
-                                <option value="4">4</option>
-                                <option value="3">3</option>
-                                <option value="2">2</option>
-                                <option value="1">1</option>
-                                <option value="0">0</option>
-                            </select>
-                        </div>
-                        <div class="rating-group" style="flex-direction: column; align-items: flex-start;">
-                            <label>3. Stubborn</label>
-                            <select name="char_stubborn">
-                                <option value="">Select...</option>
-                                <option value="5">5 - Very Stubborn</option>
-                                <option value="4">4</option>
-                                <option value="3">3</option>
-                                <option value="2">2</option>
-                                <option value="1">1</option>
-                                <option value="0">0 - Not Stubborn</option>
-                            </select>
-                        </div>
-                        <div class="rating-group" style="flex-direction: column; align-items: flex-start;">
-                            <label>4. Easily Annoyed</label>
-                            <select name="char_annoyed">
-                                <option value="">Select...</option>
-                                <option value="5">5 - Very Often</option>
-                                <option value="4">4</option>
-                                <option value="3">3</option>
-                                <option value="2">2</option>
-                                <option value="1">1</option>
-                                <option value="0">0 - Never</option>
-                            </select>
-                        </div>
-                        <div class="rating-group" style="flex-direction: column; align-items: flex-start;">
-                            <label>5. Resentful</label>
-                            <select name="char_resentful">
-                                <option value="">Select...</option>
-                                <option value="5">5 - Very Resentful</option>
-                                <option value="4">4</option>
-                                <option value="3">3</option>
-                                <option value="2">2</option>
-                                <option value="1">1</option>
-                                <option value="0">0 - Never Resentful</option>
-                            </select>
-                        </div>
-                        <div class="rating-group" style="flex-direction: column; align-items: flex-start;">
-                            <label>6. Forgiving</label>
-                            <select name="char_forgiving">
-                                <option value="">Select...</option>
-                                <option value="5">5 - Very Forgiving</option>
-                                <option value="4">4</option>
-                                <option value="3">3</option>
-                                <option value="2">2</option>
-                                <option value="1">1</option>
-                                <option value="0">0 - Never Forgiving</option>
-                            </select>
-                        </div>
-                        <div class="rating-group" style="flex-direction: column; align-items: flex-start;">
-                            <label>7. Dominant</label>
-                            <select name="char_dominant">
-                                <option value="">Select...</option>
-                                <option value="5">5 - Very Dominant</option>
-                                <option value="4">4</option>
-                                <option value="3">3</option>
-                                <option value="2">2</option>
-                                <option value="1">1</option>
-                                <option value="0">0 - Not Dominant</option>
-                            </select>
-                        </div>
-                        <div class="rating-group" style="flex-direction: column; align-items: flex-start;">
-                            <label>8. Self-Centered</label>
-                            <select name="char_selfcentered">
-                                <option value="">Select...</option>
-                                <option value="5">5 - Very Self-Centered</option>
-                                <option value="4">4</option>
-                                <option value="3">3</option>
-                                <option value="2">2</option>
-                                <option value="1">1</option>
-                                <option value="0">0 - Not Self-Centered</option>
-                            </select>
-                        </div>
-                        <div class="rating-group" style="flex-direction: column; align-items: flex-start;">
-                            <label>9. Gentle</label>
-                            <select name="char_gentle">
-                                <option value="">Select...</option>
-                                <option value="5">5 - Very Gentle</option>
-                                <option value="4">4</option>
-                                <option value="3">3</option>
-                                <option value="2">2</option>
-                                <option value="1">1</option>
-                                <option value="0">0 - Not Gentle</option>
-                            </select>
-                        </div>
-                        <div class="rating-group" style="flex-direction: column; align-items: flex-start;">
-                            <label>10. Good Listener</label>
-                            <select name="char_listener">
-                                <option value="">Select...</option>
-                                <option value="5">5 - Excellent</option>
-                                <option value="4">4</option>
-                                <option value="3">3</option>
-                                <option value="2">2</option>
-                                <option value="1">1</option>
-                                <option value="0">0 - Poor</option>
-                            </select>
-                        </div>
-                        <div class="rating-group" style="flex-direction: column; align-items: flex-start;">
-                            <label>11. Reliable, Dependable</label>
-                            <select name="char_reliable">
-                                <option value="">Select...</option>
-                                <option value="5">5 - Very Reliable</option>
-                                <option value="4">4</option>
-                                <option value="3">3</option>
-                                <option value="2">2</option>
-                                <option value="1">1</option>
-                                <option value="0">0 - Unreliable</option>
-                            </select>
-                        </div>
-                        <div class="rating-group" style="flex-direction: column; align-items: flex-start;">
-                            <label>12. Affectionate</label>
-                            <select name="char_affectionate">
-                                <option value="">Select...</option>
-                                <option value="5">5 - Very Affectionate</option>
-                                <option value="4">4</option>
-                                <option value="3">3</option>
-                                <option value="2">2</option>
-                                <option value="1">1</option>
-                                <option value="0">0 - Not Affectionate</option>
-                            </select>
-                        </div>
+                    <label>1. Patient</label>
+                    <div class="rating-item">
+                        <label><input type="radio" name="char_patient" value="1"> 1</label>
+                        <label><input type="radio" name="char_patient" value="2"> 2</label>
+                        <label><input type="radio" name="char_patient" value="3"> 3</label>
+                        <label><input type="radio" name="char_patient" value="4"> 4</label>
+                        <label><input type="radio" name="char_patient" value="5"> 5</label>
                     </div>
+                    <select name="char_patient">
+                        <option value="">Select rating</option>
+                        <option value="1">1 - Rarely</option>
+                        <option value="2">2 - Sometimes</option>
+                        <option value="3">3 - Often</option>
+                        <option value="4">4 - Usually</option>
+                        <option value="5">5 - Almost Always</option>
+                    </select>
+                </div>
+                
+                <div class="question">
+                    <label>2. Accepting</label>
+                    <select name="char_accepting">
+                        <option value="">Select rating</option>
+                        <option value="1">1 - Rarely</option>
+                        <option value="2">2 - Sometimes</option>
+                        <option value="3">3 - Often</option>
+                        <option value="4">4 - Usually</option>
+                        <option value="5">5 - Almost Always</option>
+                    </select>
+                </div>
+                
+                <div class="question">
+                    <label>3. Stubborn</label>
+                    <select name="char_stubborn">
+                        <option value="">Select rating</option>
+                        <option value="1">1 - Rarely</option>
+                        <option value="2">2 - Sometimes</option>
+                        <option value="3">3 - Often</option>
+                        <option value="4">4 - Usually</option>
+                        <option value="5">5 - Almost Always</option>
+                    </select>
+                </div>
+                
+                <div class="question">
+                    <label>4. Easily Annoyed</label>
+                    <select name="char_annoyed">
+                        <option value="">Select rating</option>
+                        <option value="1">1 - Rarely</option>
+                        <option value="2">2 - Sometimes</option>
+                        <option value="3">3 - Often</option>
+                        <option value="4">4 - Usually</option>
+                        <option value="5">5 - Almost Always</option>
+                    </select>
+                </div>
+                
+                <div class="question">
+                    <label>5. Resentful</label>
+                    <select name="char_resentful">
+                        <option value="">Select rating</option>
+                        <option value="1">1 - Rarely</option>
+                        <option value="2">2 - Sometimes</option>
+                        <option value="3">3 - Often</option>
+                        <option value="4">4 - Usually</option>
+                        <option value="5">5 - Almost Always</option>
+                    </select>
+                </div>
+                
+                <div class="question">
+                    <label>6. Forgiving</label>
+                    <select name="char_forgiving">
+                        <option value="">Select rating</option>
+                        <option value="1">1 - Rarely</option>
+                        <option value="2">2 - Sometimes</option>
+                        <option value="3">3 - Often</option>
+                        <option value="4">4 - Usually</option>
+                        <option value="5">5 - Almost Always</option>
+                    </select>
+                </div>
+                
+                <div class="question">
+                    <label>7. Dominant</label>
+                    <select name="char_dominant">
+                        <option value="">Select rating</option>
+                        <option value="1">1 - Rarely</option>
+                        <option value="2">2 - Sometimes</option>
+                        <option value="3">3 - Often</option>
+                        <option value="4">4 - Usually</option>
+                        <option value="5">5 - Almost Always</option>
+                    </select>
+                </div>
+                
+                <div class="question">
+                    <label>8. Self-Centered</label>
+                    <select name="char_selfcentered">
+                        <option value="">Select rating</option>
+                        <option value="1">1 - Rarely</option>
+                        <option value="2">2 - Sometimes</option>
+                        <option value="3">3 - Often</option>
+                        <option value="4">4 - Usually</option>
+                        <option value="5">5 - Almost Always</option>
+                    </select>
+                </div>
+                
+                <div class="question">
+                    <label>9. Gentle</label>
+                    <select name="char_gentle">
+                        <option value="">Select rating</option>
+                        <option value="1">1 - Rarely</option>
+                        <option value="2">2 - Sometimes</option>
+                        <option value="3">3 - Often</option>
+                        <option value="4">4 - Usually</option>
+                        <option value="5">5 - Almost Always</option>
+                    </select>
+                </div>
+                
+                <div class="question">
+                    <label>10. Good Listener</label>
+                    <select name="char_listener">
+                        <option value="">Select rating</option>
+                        <option value="1">1 - Rarely</option>
+                        <option value="2">2 - Sometimes</option>
+                        <option value="3">3 - Often</option>
+                        <option value="4">4 - Usually</option>
+                        <option value="5">5 - Almost Always</option>
+                    </select>
+                </div>
+                
+                <div class="question">
+                    <label>11. Reliable</label>
+                    <select name="char_reliable">
+                        <option value="">Select rating</option>
+                        <option value="1">1 - Rarely</option>
+                        <option value="2">2 - Sometimes</option>
+                        <option value="3">3 - Often</option>
+                        <option value="4">4 - Usually</option>
+                        <option value="5">5 - Almost Always</option>
+                    </select>
+                </div>
+                
+                <div class="question">
+                    <label>12. Affectionate</label>
+                    <select name="char_affectionate">
+                        <option value="">Select rating</option>
+                        <option value="1">1 - Rarely</option>
+                        <option value="2">2 - Sometimes</option>
+                        <option value="3">3 - Often</option>
+                        <option value="4">4 - Usually</option>
+                        <option value="5">5 - Almost Always</option>
+                    </select>
                 </div>
             </div>
 
@@ -494,27 +619,27 @@
                 </div>
                 
                 <div class="question">
-                    <p>2. Jesus Christ is... (describe who you think He is, what He means to you)</p>
+                    <p>2. Jesus Christ is...</p>
                     <textarea name="spiritual_q2" placeholder="Share your understanding of Jesus Christ..."></textarea>
                 </div>
                 
                 <div class="question">
-                    <p>3. My relationship to God and His Son Jesus Christ is...</p>
+                    <p>3. Describe your personal relationship with God</p>
                     <textarea name="spiritual_q3" placeholder="Describe your personal relationship with God..."></textarea>
                 </div>
                 
                 <div class="question">
                     <p>4. A Christian is...</p>
-                    <textarea name="spiritual_q4" placeholder="What does it mean to be a Christian?""></textarea>
+                    <textarea name="spiritual_q4" placeholder="What does it mean to be a Christian?"></textarea>
                 </div>
                 
                 <div class="question">
-                    <p>5. I know that I am (or am not) a Christian because...</p>
+                    <p>5. My assurance of faith is based on...</p>
                     <textarea name="spiritual_q5" placeholder="Share your assurance of faith..."></textarea>
                 </div>
                 
                 <div class="question">
-                    <p>6. The Bible is... (what it means to you, what place it has in your life)</p>
+                    <p>6. My view of Scripture is...</p>
                     <textarea name="spiritual_q6" placeholder="Share your view of Scripture..."></textarea>
                 </div>
                 
@@ -529,7 +654,7 @@
                 </div>
                 
                 <div class="question">
-                    <p>9. When I sin, I... (how do you handle it?)</p>
+                    <p>9. How do I respond to sin?</p>
                     <textarea name="spiritual_q9" placeholder="Share your response to sin..."></textarea>
                 </div>
                 
@@ -539,27 +664,27 @@
                 </div>
                 
                 <div class="question">
-                    <p>11. I pray... (when, how, why, what for)</p>
+                    <p>11. My prayer life is...</p>
                     <textarea name="spiritual_q11" placeholder="Describe your prayer life..."></textarea>
                 </div>
                 
                 <div class="question">
-                    <p>12. My chief goals in life are...</p>
+                    <p>12. My life priorities and goals are...</p>
                     <textarea name="spiritual_q12" placeholder="Share your life priorities and goals..."></textarea>
                 </div>
                 
                 <div class="question">
-                    <p>13. I want (or do not want) to attend and be involved in church. Why?</p>
+                    <p>13. My thoughts on church involvement</p>
                     <textarea name="spiritual_q13" placeholder="Share your thoughts on church involvement..."></textarea>
                 </div>
                 
                 <div class="question">
-                    <p>14. I believe fellowship with other Christians is...</p>
-                    <textarea name="spiritual_q14" placeholder="What does Christian fellowship mean to you?""></textarea>
+                    <p>14. Christian fellowship means...</p>
+                    <textarea name="spiritual_q14" placeholder="What does Christian fellowship mean to you?"></textarea>
                 </div>
                 
                 <div class="question">
-                    <p>15. I am promoting my spiritual growth and Francesca's spiritual growth by...</p>
+                    <p>15. How do you grow together spiritually?</p>
                     <textarea name="spiritual_q15" placeholder="Share how you grow together spiritually..."></textarea>
                 </div>
             </div>
@@ -567,27 +692,26 @@
             <!-- LOVE'S LANGUAGE -->
             <div class="section">
                 <h3>Love's Language</h3>
-                <p style="margin-bottom: 20px; color: #666;">Rate how important each is to you (1 = most important, 8 = least important):</p>
                 
                 <div class="question">
-                    <p>1. Helping</p>
+                    <p>1. Helping (rank 1-8)</p>
                     <select name="love_helping">
-                        <option value="">Select rating...</option>
-                        <option value="1">1 - Most Important</option>
+                        <option value="">Select rank</option>
+                        <option value="1">1</option>
                         <option value="2">2</option>
                         <option value="3">3</option>
                         <option value="4">4</option>
                         <option value="5">5</option>
                         <option value="6">6</option>
                         <option value="7">7</option>
-                        <option value="8">8 - Least Important</option>
+                        <option value="8">8</option>
                     </select>
                 </div>
                 
                 <div class="question">
-                    <p>2. Spending time together, being there, doing things together</p>
+                    <p>2. Quality Time (rank 1-8)</p>
                     <select name="love_time">
-                        <option value="">Select rating...</option>
+                        <option value="">Select rank</option>
                         <option value="1">1</option>
                         <option value="2">2</option>
                         <option value="3">3</option>
@@ -600,9 +724,9 @@
                 </div>
                 
                 <div class="question">
-                    <p>3. Saying it with words, expressing appreciation and admiration</p>
+                    <p>3. Words of Affirmation (rank 1-8)</p>
                     <select name="love_words">
-                        <option value="">Select rating...</option>
+                        <option value="">Select rank</option>
                         <option value="1">1</option>
                         <option value="2">2</option>
                         <option value="3">3</option>
@@ -615,9 +739,9 @@
                 </div>
                 
                 <div class="question">
-                    <p>4. Touching, caressing, kissing, physical contact</p>
+                    <p>4. Physical Touch (rank 1-8)</p>
                     <select name="love_touch">
-                        <option value="">Select rating...</option>
+                        <option value="">Select rank</option>
                         <option value="1">1</option>
                         <option value="2">2</option>
                         <option value="3">3</option>
@@ -630,9 +754,9 @@
                 </div>
                 
                 <div class="question">
-                    <p>5. Being concerned about opinions, feelings, interests, listening</p>
+                    <p>5. Acts of Concern (rank 1-8)</p>
                     <select name="love_concern">
-                        <option value="">Select rating...</option>
+                        <option value="">Select rank</option>
                         <option value="1">1</option>
                         <option value="2">2</option>
                         <option value="3">3</option>
@@ -645,9 +769,9 @@
                 </div>
                 
                 <div class="question">
-                    <p>6. Being loyal, faithful, trustworthy, supportive, fulfilling promises</p>
+                    <p>6. Loyalty (rank 1-8)</p>
                     <select name="love_loyal">
-                        <option value="">Select rating...</option>
+                        <option value="">Select rank</option>
                         <option value="1">1</option>
                         <option value="2">2</option>
                         <option value="3">3</option>
@@ -660,9 +784,9 @@
                 </div>
                 
                 <div class="question">
-                    <p>7. Meeting material and physical needs, giving gifts</p>
+                    <p>7. Gifts (rank 1-8)</p>
                     <select name="love_gifts">
-                        <option value="">Select rating...</option>
+                        <option value="">Select rank</option>
                         <option value="1">1</option>
                         <option value="2">2</option>
                         <option value="3">3</option>
@@ -675,22 +799,22 @@
                 </div>
                 
                 <div class="question">
-                    <p>8. During childhood, I knew my parents loved me because they:</p>
+                    <p>8. Describe your childhood experience of love</p>
                     <textarea name="love_childhood" placeholder="Share your childhood experience of love..."></textarea>
                 </div>
                 
                 <div class="question">
-                    <p>9. When I'm "down," I like Modest to:</p>
+                    <p>9. What helps you when you're feeling down?</p>
                     <textarea name="love_down" placeholder="What helps you when you're feeling down?"></textarea>
                 </div>
                 
                 <div class="question">
-                    <p>10. After an argument, I want Modest to:</p>
+                    <p>10. What helps reconcile after conflict?</p>
                     <textarea name="love_argument" placeholder="What helps reconcile after conflict?"></textarea>
                 </div>
                 
                 <div class="question">
-                    <p>11. When I want to really show my love to Modest, I:</p>
+                    <p>11. How do you express love?</p>
                     <textarea name="love_show" placeholder="How do you express love?"></textarea>
                 </div>
             </div>
@@ -698,101 +822,99 @@
             <!-- CONFLICT RESOLUTION -->
             <div class="section">
                 <h3>Conflict Resolution Principles</h3>
-                <p style="margin-bottom: 20px; color: #666;">Rate how often you practice each principle (0 = never, 4 = always):</p>
                 
                 <div class="question">
-                    <p>1. When a disagreement arises, I focus on what I should do to correct it.</p>
+                    <p>1. How do you typically handle conflict?</p>
                     <select name="conflict_q1">
-                        <option value="">Select...</option>
-                        <option value="4">4 - Always</option>
-                        <option value="3">3 - Frequently</option>
+                        <option value="">Select option</option>
+                        <option value="avoid">I avoid conflict</option>
+                        <option value="confront">I confront directly</option>
+                        <option value="mediate">I seek to mediate</option>
+                        <option value="withdraw">I withdraw initially</option>
+                    </select>
+                </div>
+                
+                <div class="question">
+                    <p>2. I get angry when...</p>
+                    <select name="conflict_q2">
+                        <option value="">Select rating</option>
+                        <option value="4">4 - Almost Always</option>
+                        <option value="3">3 - Often</option>
                         <option value="2">2 - Sometimes</option>
-                        <option value="1">1 - Seldom</option>
+                        <option value="1">1 - Rarely</option>
                         <option value="0">0 - Never</option>
                     </select>
                 </div>
                 
                 <div class="question">
-                    <p>2. When a problem arises, I am ready to admit I may be part of the problem.</p>
-                    <select name="conflict_q2">
-                        <option value="">Select...</option>
-                        <option value="4">4</option>
-                        <option value="3">3</option>
-                        <option value="2">2</option>
-                        <option value="1">1</option>
-                        <option value="0">0</option>
-                    </select>
-                </div>
-                
-                <div class="question">
-                    <p>3. I realize I cannot change Modest; she must want to change.</p>
+                    <p>3. I handle anger by...</p>
                     <select name="conflict_q3">
-                        <option value="">Select...</option>
-                        <option value="4">4</option>
-                        <option value="3">3</option>
-                        <option value="2">2</option>
-                        <option value="1">1</option>
-                        <option value="0">0</option>
+                        <option value="">Select rating</option>
+                        <option value="4">4 - Very Well</option>
+                        <option value="3">3 - Well</option>
+                        <option value="2">2 - Somewhat</option>
+                        <option value="1">1 - Poorly</option>
+                        <option value="0">0 - Very Poorly</option>
                     </select>
                 </div>
                 
                 <div class="question">
-                    <p>4. I realize that love is not primarily a feeling, but actions to serve and help my partner.</p>
+                    <p>4. I criticize by...</p>
                     <select name="conflict_q4">
-                        <option value="">Select...</option>
-                        <option value="4">4</option>
-                        <option value="3">3</option>
-                        <option value="2">2</option>
-                        <option value="1">1</option>
-                        <option value="0">0</option>
+                        <option value="">Select rating</option>
+                        <option value="4">4 - Very harshly</option>
+                        <option value="3">3 - Somewhat</option>
+                        <option value="2">2 - Constructively</option>
+                        <option value="1">1 - Rarely</option>
+                        <option value="0">0 - Never</option>
                     </select>
                 </div>
                 
                 <div class="question">
-                    <p>5. I focus my attention on changing my own behavior and attitudes.</p>
+                    <p>5. I defend myself by...</p>
                     <select name="conflict_q5">
-                        <option value="">Select...</option>
-                        <option value="4">4</option>
-                        <option value="3">3</option>
-                        <option value="2">2</option>
-                        <option value="1">1</option>
-                        <option value="0">0</option>
+                        <option value="">Select rating</option>
+                        <option value="4">4 - Very defensively</option>
+                        <option value="3">3 - Somewhat</option>
+                        <option value="2">2 - Openly</option>
+                        <option value="1">1 - Rarely</option>
+                        <option value="0">0 - Never</option>
                     </select>
                 </div>
                 
                 <div class="question">
-                    <p>6. I practice the Golden Rule (Matthew 7:12) - I treat Modest as I want to be treated.</p>
+                    <p>6. I stonewall by...</p>
                     <select name="conflict_q6">
-                        <option value="">Select...</option>
-                        <option value="4">4</option>
-                        <option value="3">3</option>
-                        <option value="2">2</option>
-                        <option value="1">1</option>
-                        <option value="0">0</option>
+                        <option value="">Select rating</option>
+                        <option value="4">4 - Frequently</option>
+                        <option value="3">3 - Often</option>
+                        <option value="2">2 - Sometimes</option>
+                        <option value="1">1 - Rarely</option>
+                        <option value="0">0 - Never</option>
                     </select>
                 </div>
                 
                 <div class="question">
-                    <p>7. I keep current - I deal with one problem at a time and forgive and forget.</p>
+                    <p>7. I show contempt by...</p>
                     <select name="conflict_q7">
-                        <option value="">Select...</option>
-                        <option value="4">4</option>
-                        <option value="3">3</option>
-                        <option value="2">2</option>
-                        <option value="1">1</option>
-                        <option value="0">0</option>
+                        <option value="">Select rating</option>
+                        <option value="4">4 - Frequently</option>
+                        <option value="3">3 - Often</option>
+                        <option value="2">2 - Sometimes</option>
+                        <option value="1">1 - Rarely</option>
+                        <option value="0">0 - Never</option>
                     </select>
                 </div>
                 
                 <div class="question">
-                    <p>8. I try to maintain a close relationship with God through Jesus Christ.</p>
+                    <p>8. Overall conflict style</p>
                     <select name="conflict_q8">
-                        <option value="">Select...</option>
-                        <option value="4">4</option>
-                        <option value="3">3</option>
-                        <option value="2">2</option>
-                        <option value="1">1</option>
-                        <option value="0">0</option>
+                        <option value="">Select rating</option>
+                        <option value="4">4 - Very Healthy</option>
+                        <option value="3">3 - Healthy</option>
+                        <option value="2">2 - Needs Work</option>
+                        <option value="1">1 - Problematic</option>
+                        <option value="0">0 - Very Problematic</option>
                     </select>
                 </div>
             </div>
@@ -802,27 +924,27 @@
                 <h3>Family Finances God's Way</h3>
                 
                 <div class="question">
-                    <p>1. What is your current financial situation? (income, debts, savings)</p>
+                    <p>1. What is your current financial picture?</p>
                     <textarea name="finance_q1" placeholder="Share your current financial picture..."></textarea>
                 </div>
                 
                 <div class="question">
-                    <p>2. What are your spending habits and priorities?</p>
-                    <textarea name="finance_q2" placeholder="How do you currently handle money?""></textarea>
+                    <p>2. How do you currently handle money?</p>
+                    <textarea name="finance_q2" placeholder="How do you currently handle money?"></textarea>
                 </div>
                 
                 <div class="question">
-                    <p>3. How do you feel about debt? What are your thoughts on borrowing money?</p>
+                    <p>3. What are your views on debt and credit?</p>
                     <textarea name="finance_q3" placeholder="Share your views on debt and credit..."></textarea>
                 </div>
                 
                 <div class="question">
-                    <p>4. What are your financial goals for the first year of marriage?</p>
+                    <p>4. What are your financial plans for your first year together?</p>
                     <textarea name="finance_q4" placeholder="Share your financial plans for your first year together..."></textarea>
                 </div>
                 
                 <div class="question">
-                    <p>5. How should decisions about money be made in marriage?</p>
+                    <p>5. Your thoughts on financial teamwork</p>
                     <textarea name="finance_q5" placeholder="Your thoughts on financial teamwork..."></textarea>
                 </div>
             </div>
@@ -832,443 +954,377 @@
                 <h3>Final Reflection</h3>
                 
                 <div class="question">
-                    <p>1. What have you learned about yourself through this process?</p>
+                    <p>1. What personal insights have you gained?</p>
                     <textarea name="final_q1" placeholder="Share personal insights..."></textarea>
                 </div>
                 
                 <div class="question">
-                    <p>2. What have you learned about Modest through this process?</p>
+                    <p>2. What have you discovered about Francesca?</p>
                     <textarea name="final_q2" placeholder="Share what you've discovered about her..."></textarea>
                 </div>
                 
                 <div class="question">
-                    <p>3. What areas are you most concerned about for your marriage?</p>
+                    <p>3. What concerns or worries do you have?</p>
                     <textarea name="final_q3" placeholder="Share your concerns and worries..."></textarea>
                 </div>
                 
                 <div class="question">
-                    <p>4. What are you most excited about for your marriage?</p>
+                    <p>4. What are your hopes and excitement for the future?</p>
                     <textarea name="final_q4" placeholder="Share your hopes and excitement..."></textarea>
                 </div>
                 
                 <div class="question">
-                    <p>5. What questions would you like to discuss with your pastor?</p>
+                    <p>5. What questions or topics would you like to discuss in counseling?</p>
                     <textarea name="final_q5" placeholder="List any questions or topics for counseling..."></textarea>
                 </div>
             </div>
 
             <div class="submit-section">
-                <p>Prayerfully review your responses before submitting. Once submitted, your answers will be available for your pastor to review.</p>
                 <button type="button" class="btn-save" onclick="saveProgress()">Save Progress</button>
-                <button type="submit">Submit My Responses</button>
+                <button type="submit">Submit Questionnaire</button>
             </div>
         </form>
     </div>
 
     <script>
-        // ============================================
-        // Notification Styles
-        // ============================================
-        document.head.innerHTML += getNotificationStyles();
+    // ===== CREDENTIALS CONFIGURATION =====
+    // Create a separate config.js file - NEVER commit this to version control!
+    // Place this file in the same folder as your HTML
+    (function() {
+        if (typeof CONFIG === 'undefined') {
+            window.CONFIG = {
+                GOOGLE_CLIENT_ID: '88174880511-m9jq7tknona72s1828r6rarge4863rtm.apps.googleusercontent.com',
+                GOOGLE_API_KEY: 'AIzaSyAA-2q08YBXVdeHnWvifljAJ3L9mhot1g0',
+                GDRIVE_FOLDER_ID: '1WL9oAOLX8V6-wY5LD6sCsfl5-cOUzm5k'
+            };
+        }
+    })();
+    </script>
+    <script src="config.js"></script>
+
+    <script>
+    // ===== GOOGLE AUTH & DRIVE STORAGE =====
+    
+    const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+    let tokenClient = null;
+    let currentAccessToken = null;
+    
+    // Check if config is set up
+    function isConfigured() {
+        return CONFIG.GOOGLE_CLIENT_ID && CONFIG.GOOGLE_API_KEY && CONFIG.GDRIVE_FOLDER_ID;
+    }
+    
+    // Show status message
+    function showStatus(message, type = 'info') {
+        const statusEl = document.getElementById('status');
+        statusEl.textContent = message;
+        statusEl.className = 'status ' + type;
+    }
+    
+    // Initialize Google Sign-In
+    function initGoogleSignIn() {
+        if (!isConfigured()) {
+            showStatus('Please configure your credentials in config.js first', 'error');
+            document.getElementById('setupWarning').classList.remove('hidden');
+            return;
+        }
         
-        // ============================================
-        // DataManager with Google Drive Integration
-        // ============================================
+        if (!tokenClient) {
+            tokenClient = google.accounts.oauth2.initTokenClient({
+                client_id: CONFIG.GOOGLE_CLIENT_ID,
+                scope: SCOPES,
+                callback: handleTokenCallback,
+                error_callback: handleTokenError
+            });
+        }
+        tokenClient.requestAccessToken();
+    }
+    
+    // Handle token response
+    function handleTokenCallback(response) {
+        if (response.error !== undefined) {
+            console.error('OAuth error:', response.error);
+            showStatus('Sign-in failed. Please try again.', 'error');
+            return;
+        }
+        currentAccessToken = response.access_token;
+        showUserInfo();
+        showStatus('Signed in successfully! Your progress will save to Google Drive.', 'success');
+        // Auto-save after sign-in
+        saveToGoogleDrive(getLocalStorageData());
+    }
+    
+    // Handle token error
+    function handleTokenError(error) {
+        console.error('Token error:', error);
+        showStatus('Sign-in error. Please check your credentials.', 'error');
+    }
+    
+    // Show user info after sign-in
+    function showUserInfo() {
+        const authPanel = document.getElementById('authPanel');
+        const signInBtn = document.getElementById('signInBtn');
+        const userInfo = document.getElementById('userInfo');
         
-        const GDRIVE_FOLDER_ID = '1WL9oAOLX8V6-wY5LD6sCsfl5-cOUzm5k';
+        signInBtn.classList.add('hidden');
+        userInfo.classList.remove('hidden');
         
-        class DataManager {
-            constructor() {
-                this.PARTNER_DATA_FILE = 'francesca_progress_data.json';
-                this.driveFileId = null;
-                this.dataCache = {};
-                this.initGoogleAPI();
+        // Try to get user info
+        fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+            headers: { 'Authorization': 'Bearer ' + currentAccessToken }
+        })
+        .then(r => r.json())
+        .then(user => {
+            document.getElementById('userName').textContent = user.name || user.email;
+            if (user.picture) {
+                document.getElementById('userAvatar').src = user.picture;
             }
-            
-            async initGoogleAPI() {
-                // Load Google API client
-                if (!window.gapi) {
-                    const script = document.createElement('script');
-                    script.src = 'https://apis.google.com/js/api.js';
-                    script.onload = () => this.afterGapiLoad();
-                    document.head.appendChild(script);
-                } else {
-                    this.afterGapiLoad();
-                }
-            }
-            
-            afterGapiLoad() {
-                gapi.load('client:auth2', async () => {
-                    try {
-                        await gapi.client.init({
-                            apiKey: 'AIzaSyAA-2q08YBXVdeHnWvifljAJ3L9mhot1g0',
-                            clientId: '88174880511-m9jq7tknona72s1828r6rarge4863rtm.apps.googleusercontent.com',
-                            discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
-                            scope: 'https://www.googleapis.com/auth/drive.file'
-                        });
-                        this.authInstance = gapi.auth2.getAuthInstance();
-                        this.authInstance.isSignedIn.listen((isSignedIn) => {
-                            if (isSignedIn) {
-                                this.loadAllPartnerData();
-                            }
-                        });
-                        if (this.authInstance.isSignedIn.get()) {
-                            this.loadAllPartnerData();
-                        }
-                    } catch (error) {
-                        console.warn('Google API initialization skipped - using local fallback');
-                    }
-                });
-            }
-            
-            async ensureFolderExists() {
+        })
+        .catch(() => {
+            document.getElementById('userName').textContent = 'Signed in';
+        });
+    }
+    
+    // Sign out
+    function signOut() {
+        if (currentAccessToken) {
+            google.accounts.oauth2.revoke(currentAccessToken, () => {
+                currentAccessToken = null;
+                document.getElementById('signInBtn').classList.remove('hidden');
+                document.getElementById('userInfo').classList.add('hidden');
+                showStatus('Signed out. Progress still saves locally.', 'info');
+            });
+        }
+    }
+    
+    // Get local storage data (fallback)
+    function getLocalStorageData() {
+        const data = {};
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key.startsWith('francesca_')) {
                 try {
-                    const response = await gapi.client.drive.files.list({
-                        q: `name='Counseling Form Submissions' and mimeType='application/vnd.google-apps.folder' and '${GDRIVE_FOLDER_ID}' in parents`,
-                        fields: 'files(id, name)'
-                    });
-                    
-                    if (response.result.files && response.result.files.length > 0) {
-                        return response.result.files[0].id;
-                    } else {
-                        const folder = await gapi.client.drive.files.create({
-                            resource: {
-                                name: 'Counseling Form Submissions',
-                                mimeType: 'application/vnd.google-apps.folder',
-                                parents: [GDRIVE_FOLDER_ID]
-                            },
-                            fields: 'id'
-                        });
-                        return folder.result.id;
-                    }
-                } catch (error) {
-                    console.error('Error ensuring folder exists:', error);
-                    throw error;
+                    data[key] = JSON.parse(localStorage.getItem(key));
+                } catch (e) {
+                    data[key] = localStorage.getItem(key);
                 }
             }
+        }
+        return data;
+    }
+    
+    // Save to Google Drive
+    async function saveToGoogleDrive(data, filename = null) {
+        if (!currentAccessToken || !isConfigured()) {
+            return false;
+        }
+        
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const fileName = filename || `francesca_progress_${timestamp}.json`;
+        const content = JSON.stringify(data, null, 2);
+        
+        try {
+            // Create file in Google Drive using v3 API
+            const metadata = {
+                name: fileName,
+                parents: [CONFIG.GDRIVE_FOLDER_ID],
+                mimeType: 'application/json'
+            };
             
-            async uploadToDrive(content, filename, folderId) {
-                const boundary = 'boundary' + Date.now();
-                const delimiter = "\r\n--" + boundary + "\r\n";
-                const close_delimiter = "\r\n--" + boundary + "--";
-                
-                const contentType = 'application/json';
-                const metadata = {
-                    name: filename,
-                    parents: [folderId || GDRIVE_FOLDER_ID],
-                    mimeType: contentType
-                };
-                
-                const multipartRequestBody =
-                    delimiter +
-                    'Content-Type: application/json\r\n\r\n' +
-                    JSON.stringify(metadata) +
-                    delimiter +
-                    'Content-Type: ' + contentType + '\r\n\r\n' +
-                    content +
-                    close_delimiter;
-                
-                const request = gapi.client.request({
-                    path: '/upload/drive/v3/files',
-                    method: 'POST',
-                    params: { uploadType: 'multipart' },
-                    headers: {
-                        'Content-Type': 'multipart/related; boundary="' + boundary + '"'
-                    },
-                    body: multipartRequestBody
-                });
-                
-                return new Promise((resolve, reject) => {
-                    request.execute((resp, err) => {
-                        if (err) reject(err);
-                        else resolve(resp);
-                    });
-                });
+            const formData = new FormData();
+            formData.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+            formData.append('file', new Blob([content], { type: 'application/json' }));
+            
+            const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + currentAccessToken },
+                body: formData
+            });
+            
+            if (response.ok) {
+                const result = await response.json();
+                console.log('Saved to Google Drive:', result.name);
+                showStatus('Progress saved to Google Drive!', 'success');
+                return true;
+            } else {
+                const error = await response.json();
+                console.error('Drive save error:', error);
+                return false;
             }
-            
-            async updateFileInDrive(fileId, content) {
-                const boundary = 'boundary' + Date.now();
-                const delimiter = "\r\n--" + boundary + "\r\n";
-                const close_delimiter = "\r\n--" + boundary + "--";
-                
-                const contentType = 'application/json';
-                const multipartRequestBody =
-                    delimiter +
-                    'Content-Type: application/json\r\n\r\n' +
-                    JSON.stringify({ name: 'francesca_progress_data.json' }) +
-                    delimiter +
-                    'Content-Type: ' + contentType + '\r\n\r\n' +
-                    content +
-                    close_delimiter;
-                
-                const request = gapi.client.request({
-                    path: '/upload/drive/v3/files/' + fileId,
-                    method: 'PATCH',
-                    params: { uploadType: 'multipart' },
-                    headers: {
-                        'Content-Type': 'multipart/related; boundary="' + boundary + '"'
-                    },
-                    body: multipartRequestBody
-                });
-                
-                return new Promise((resolve, reject) => {
-                    request.execute((resp, err) => {
-                        if (err) reject(err);
-                        else resolve(resp);
-                    });
-                });
-            }
-            
-            async listFilesInFolder(folderId) {
-                try {
-                    const response = await gapi.client.drive.files.list({
-                        q: `'${folderId || GDRIVE_FOLDER_ID}' in parents and name='${this.PARTNER_DATA_FILE}'`,
-                        fields: 'files(id, name, modifiedTime)'
-                    });
-                    return response.result.files || [];
-                } catch (error) {
-                    console.error('Error listing files:', error);
-                    return [];
-                }
-            }
-            
-            async downloadFile(fileId) {
-                try {
-                    const response = await gapi.client.drive.files.get({
-                        fileId: fileId,
-                        alt: 'media'
-                    });
-                    return response.body;
-                } catch (error) {
-                    console.error('Error downloading file:', error);
-                    return null;
-                }
-            }
-            
-            populateFormFields(data) {
-                const form = document.getElementById('counselingForm');
-                if (!form) return;
-                
+        } catch (err) {
+            console.error('Save to Drive failed:', err);
+            return false;
+        }
+    }
+    
+    // ===== FORM HANDLING =====
+    
+    const form = document.getElementById('questionnaireForm');
+    const STORAGE_KEY = 'francesca_progress';
+    
+    // Check setup status on load
+    document.addEventListener('DOMContentLoaded', function() {
+        if (!isConfigured()) {
+            document.getElementById('setupWarning').classList.remove('hidden');
+            showStatus('Cloud save not configured. Using local storage only.', 'warning');
+        } else {
+            showStatus('Sign in above to enable Google Drive backup', 'info');
+        }
+        
+        loadSavedData();
+        updateStatus();
+    });
+    
+    // Load saved data from localStorage
+    function loadSavedData() {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+            try {
+                const data = JSON.parse(saved);
                 for (let key in data) {
                     const field = form.elements[key];
                     if (field) {
-                        if (field.type === 'radio') {
-                            const radios = form.elements[key];
-                            for (let r of radios) {
-                                if (r.value === data[key]) {
-                                    r.checked = true;
-                                    break;
-                                }
-                            }
-                        } else {
+                        if (field.type === 'select-one' || field.type === 'textarea' || field.type === 'text') {
                             field.value = data[key];
+                        } else if (field.type === 'radio') {
+                            const radio = form.elements[key];
+                            for (let r of radio) {
+                                if (r.value === data[key]) r.checked = true;
+                            }
                         }
                     }
                 }
+            } catch (e) {
+                console.error('Error loading saved data:', e);
             }
-            
-            updateStatusDisplay(data) {
-                const statusDiv = document.getElementById('status');
-                if (!statusDiv) return;
-                
+        }
+    }
+    
+    // Update status display
+    function updateStatus() {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+            try {
+                const data = JSON.parse(saved);
                 if (data._submitted) {
-                    statusDiv.className = 'status submitted';
-                    statusDiv.innerHTML = '✓ Your responses have been submitted. Last updated: ' + new Date(data._submittedAt).toLocaleString();
-                } else if (Object.keys(data).length > 0) {
-                    statusDiv.className = 'status in-progress';
-                    statusDiv.innerHTML = '○ You have saved progress. Not yet submitted.';
+                    showStatus('✓ Questionnaire submitted on ' + new Date(data._submittedAt).toLocaleDateString(), 'success');
                 } else {
-                    statusDiv.className = 'status not-started';
-                    statusDiv.innerHTML = '○ You have not started this questionnaire yet.';
+                    const count = Object.keys(data).filter(k => !k.startsWith('_')).length;
+                    showStatus('📝 Progress saved locally (' + count + ' fields completed)', 'info');
                 }
-            }
-            
-            async loadAllPartnerData() {
-                try {
-                    // First try to load from Google Drive
-                    if (this.authInstance && this.authInstance.isSignedIn.get()) {
-                        const folderId = await this.ensureFolderExists();
-                        const files = await this.listFilesInFolder(folderId);
-                        
-                        if (files.length > 0) {
-                            this.driveFileId = files[0].id;
-                            const content = await this.downloadFile(files[0].id);
-                            if (content) {
-                                this.dataCache = JSON.parse(content);
-                                this.populateFormFields(this.dataCache);
-                                this.updateStatusDisplay(this.dataCache);
-                            }
-                            return;
-                        }
-                    }
-                } catch (error) {
-                    console.warn('Could not load from Google Drive, trying local storage:', error);
-                }
-                
-                // Fallback to localStorage
-                const savedData = localStorage.getItem('francesca_progress');
-                if (savedData) {
-                    this.dataCache = JSON.parse(savedData);
-                    this.populateFormFields(this.dataCache);
-                    this.updateStatusDisplay(this.dataCache);
-                }
-            }
-            
-            async savePartner(name, partnerData) {
-                this.dataCache = partnerData;
-                
-                try {
-                    if (this.authInstance && this.authInstance.isSignedIn.get()) {
-                        const folderId = await this.ensureFolderExists();
-                        const content = JSON.stringify(partnerData, null, 2);
-                        
-                        if (this.driveFileId) {
-                            await this.updateFileInDrive(this.driveFileId, content);
-                        } else {
-                            const result = await this.uploadToDrive(content, this.PARTNER_DATA_FILE, folderId);
-                            if (result.result && result.result.id) {
-                                this.driveFileId = result.result.id;
-                            }
-                        }
-                    }
-                } catch (error) {
-                    console.warn('Google Drive save failed, saving to localStorage:', error);
-                }
-                
-                // Always also save to localStorage as backup
-                localStorage.setItem('francesca_progress', JSON.stringify(partnerData));
-            }
-            
-            getPartner(name) {
-                return this.dataCache;
-            }
+            } catch (e) {}
         }
+    }
+    
+    // Collect form data
+    function collectFormData(formElement) {
+        const data = {};
+        const elements = formElement.elements;
         
-        // Create global DataManager instance
-        const DataManager = new DataManager();
-        
-        // ============================================
-        // Form Functions
-        // ============================================
-        
-        function updateStatus() {
-            const data = DataManager.getPartner('Francesca');
-            const statusDiv = document.getElementById('status');
-            
-            if (data._submitted) {
-                statusDiv.className = 'status submitted';
-                statusDiv.innerHTML = '✓ Your responses have been submitted. Last updated: ' + new Date(data._submittedAt).toLocaleString();
-            } else if (Object.keys(data).length > 0) {
-                statusDiv.className = 'status in-progress';
-                statusDiv.innerHTML = '○ You have saved progress. Not yet submitted.';
-            } else {
-                statusDiv.className = 'status not-started';
-                statusDiv.innerHTML = '○ You have not started this questionnaire yet.';
-            }
-        }
-        
-        function loadSavedData() {
-            const data = DataManager.getPartner('Francesca');
-            const form = document.getElementById('counselingForm');
-            
-            for (let key in data) {
-                const field = form.elements[key];
-                if (field) {
-                    if (field.type === 'select-one') {
-                        field.value = data[key];
-                    } else {
-                        field.value = data[key];
-                    }
-                }
-            }
-        }
-        
-        function collectFormData(form) {
-            const data = {};
-            const elements = form.elements;
-            
-            for (let i = 0; i < elements.length; i++) {
-                const el = elements[i];
-                const name = el.name;
-                
-                if (!name || el.type === 'button' || el.type === 'submit' || el.type === 'reset') {
-                    continue;
-                }
-                
+        for (let i = 0; i < elements.length; i++) {
+            const el = elements[i];
+            if (el.name) {
                 if (el.type === 'radio') {
                     if (el.checked) {
-                        data[name] = el.value;
+                        data[el.name] = el.value;
                     }
                 } else {
-                    data[name] = el.value;
+                    data[el.name] = el.value;
                 }
             }
-            
-            return data;
         }
         
-        async function saveProgress() {
-            const form = document.getElementById('counselingForm');
-            const data = collectFormData(form);
-            delete data._submitted;
-            delete data._submittedAt;
-            
-            await DataManager.savePartner('Francesca', data);
-            showNotification('Progress saved to Google Drive successfully!', 'success');
+        return data;
+    }
+    
+    // Save progress (local + Drive)
+    function saveProgress() {
+        const data = collectFormData(form);
+        delete data._submitted;
+        delete data._submittedAt;
+        
+        // Save to localStorage
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        
+        // Also save to Google Drive if signed in
+        const allData = { Francesca: data };
+        allData._savedAt = new Date().toISOString();
+        saveToGoogleDrive(allData, 'francesca_progress.json');
+        
+        updateStatus();
+    }
+    
+    // Auto-save every 30 seconds
+    setInterval(saveProgress, 30000);
+    
+    // Handle form submission
+    form.addEventListener('submit', function(event) {
+        event.preventDefault();
+        
+        if (!validateForm(form)) {
+            return;
         }
         
-        async function handleSubmit(event) {
-            event.preventDefault();
-            
-            const form = event.target;
-            const data = collectFormData(form);
-            data._submitted = true;
-            data._submittedAt = new Date().toISOString();
-            
-            await DataManager.savePartner('Francesca', data);
-            showNotification('Your responses have been submitted successfully!', 'success');
-            
-            setTimeout(() => {
-                window.location.href = 'index.html';
-            }, 2000);
+        const data = collectFormData(form);
+        data._submitted = true;
+        data._submittedAt = new Date().toISOString();
+        
+        // Save to localStorage
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        
+        // Save to Google Drive
+        const allData = { Francesca: data };
+        allData._submittedAt = data._submittedAt;
+        saveToGoogleDrive(allData, 'francesca_submission.json');
+        
+        showStatus('✓ Questionnaire submitted! Redirecting...', 'success');
+        
+        setTimeout(() => {
+            window.location.href = 'index.html';
+        }, 2000);
+    });
+    
+    // Validate form
+    function validateForm(formElement) {
+        const elements = formElement.elements;
+        let isValid = true;
+        let firstEmpty = null;
+        
+        // Clear previous error states
+        for (let i = 0; i < elements.length; i++) {
+            const el = elements[i];
+            el.classList.remove('error');
         }
         
-        function setupAutoSave(partnerName, form) {
-            const autoSaveInterval = 60000; // 1 minute
+        // Check required fields
+        for (let i = 0; i < elements.length; i++) {
+            const el = elements[i];
             
-            // Periodic auto-save to Google Drive
-            setInterval(async () => {
-                const data = collectFormData(form);
-                if (Object.keys(data).length > 0) {
-                    delete data._submitted;
-                    delete data._submittedAt;
-                    await DataManager.savePartner(partnerName, data);
+            if (el.name && el.required === false) continue;
+            
+            if (el.tagName === 'TEXTAREA' || el.tagName === 'INPUT') {
+                if (el.value.trim() === '') {
+                    el.classList.add('error');
+                    if (!firstEmpty) firstEmpty = el;
+                    isValid = false;
                 }
-            }, autoSaveInterval);
-            
-            // Input-triggered auto-save with debounce
-            form.addEventListener('input', () => {
-                clearTimeout(window.autoSaveTimer);
-                window.autoSaveTimer = setTimeout(async () => {
-                    const data = collectFormData(form);
-                    if (Object.keys(data).length > 0) {
-                        delete data._submitted;
-                        delete data._submittedAt;
-                        await DataManager.savePartner(partnerName, data);
-                    }
-                }, 5000);
-            });
+            } else if (el.tagName === 'SELECT') {
+                if (el.value === '') {
+                    el.classList.add('error');
+                    if (!firstEmpty) firstEmpty = el;
+                    isValid = false;
+                }
+            }
         }
         
-        document.addEventListener('DOMContentLoaded', async function() {
-            loadSavedData();
-            updateStatus();
-            setupAutoSave('Francesca', document.getElementById('counselingForm'));
-        });
+        if (firstEmpty) {
+            firstEmpty.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            showStatus('Please fill in all required fields', 'error');
+        }
+        
+        return isValid;
+    }
     </script>
-<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"8607d2a720d14b038279025b2b5a82e5","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
-<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"8607d2a720d14b038279025b2b5a82e5","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
-<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"8607d2a720d14b038279025b2b5a82e5","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"8607d2a720d14b038279025b2b5a82e5","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>
 </html>
