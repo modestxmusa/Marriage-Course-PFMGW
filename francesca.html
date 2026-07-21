@@ -916,11 +916,13 @@
             
             const form = event.target;
             if (!validateForm(form)) {
-                showNotification('Please fill in all required fields.', 'error');
+                showNotification('Please complete all questions before submitting.', 'error');
                 return;
             }
             
             const data = collectFormData(form);
+            data._submitted = true;
+            data._submittedAt = new Date().toISOString();
             DataManager.savePartner('Francesca', data);
             showNotification('Your responses have been submitted successfully!', 'success');
             
@@ -929,9 +931,58 @@
             }, 2000);
         }
         
+        function validateForm(form) {
+            const elements = form.elements;
+            let allFilled = true;
+            let firstEmpty = null;
+            
+            // Clear previous error states
+            for (let i = 0; i < elements.length; i++) {
+                const el = elements[i];
+                el.classList.remove('error');
+            }
+            
+            // Check all textareas and input fields
+            for (let i = 0; i < elements.length; i++) {
+                const el = elements[i];
+                
+                // Skip buttons, submits, and hidden fields
+                if (el.type === 'button' || el.type === 'submit' || el.type === 'hidden') {
+                    continue;
+                }
+                
+                const name = el.name;
+                
+                // Check textareas and inputs
+                if ((el.tagName === 'TEXTAREA' || el.type === 'text') && name) {
+                    if (el.value.trim() === '') {
+                        el.classList.add('error');
+                        if (!firstEmpty) firstEmpty = el;
+                        allFilled = false;
+                    }
+                }
+                
+                // Check select dropdowns (character inventory, love language ratings, conflict resolution)
+                if (el.type === 'select-one' && name && name.startsWith('char_')) {
+                    if (el.value === '') {
+                        el.classList.add('error');
+                        if (!firstEmpty) firstEmpty = el;
+                        allFilled = false;
+                    }
+                }
+            }
+            
+            if (firstEmpty) {
+                firstEmpty.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            
+            return allFilled;
+        }
+        
         document.addEventListener('DOMContentLoaded', function() {
             loadSavedData();
             updateStatus();
+            setupAutoSave('Francesca', document.getElementById('counselingForm'));
         });
     </script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"8607d2a720d14b038279025b2b5a82e5","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
