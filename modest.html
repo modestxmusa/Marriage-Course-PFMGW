@@ -1,6 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="https://apis.google.com/js/api.js"></script>
+
+    <!-- Visual Sync Status -->
+    <style>
+        #syncStatus {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: white;
+            border: 2px solid var(--accent);
+            border-radius: 8px;
+            padding: 12px 18px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.8rem;
+            color: var(--primary);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            gap: 8px;
+        }
+        #syncStatus.visible { display: flex; }
+        #syncStatus .dot {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            background: #7f8c8d;
+        }
+        #syncStatus .dot.syncing { background: #f39c12; animation: pulse 1s infinite; }
+        #syncStatus .dot.saved { background: #27ae60; }
+        #syncStatus .dot.error { background: #c0392b; }
+        @keyframes pulse { from { opacity: 1; } to { opacity: 0.4; } }
+    </style>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Modest's Questionnaire - Marriage Counseling</title>
@@ -158,10 +192,21 @@
         <a href="francesca.html">Francesca's Responses</a>
         <a href="results.html">View Results</a>
     </nav>
+    <div id="syncStatus">
+        <div class="dot"></div>
+        <span id="syncText">Signing in...</span>
+    </div>
+
     <div class="container">
         <div id="status" class="status"></div>
         
         <div class="intro-card">
+
+            <div style="margin: 20px 0; text-align: center;">
+                <div id="googleSignInBtn" style="display: inline-block;"></div>
+                <p style="font-size:0.8rem; color:#888; margin-top:8px;">Sign in to save progress to Google Drive</p>
+            </div>
+
             <h2>Session 1: Getting Started</h2>
             <p>Take time to carefully and prayerfully fill out this questionnaire. Be honest and thoughtful in your responses. After completing, discuss your reflections with Francesca.</p>
         </div>
@@ -865,148 +910,298 @@
         </form>
     </div>
 
-    <script>
-        // ============================================================
-        // DataManager — localStorage wrapper for partner questionnaire data
-        // ============================================================
-        var DataManager = (function() {
-            var STORAGE_KEY = 'marriageCounseling';
-            
-            function getAll() {
-                try {
-                    var raw = localStorage.getItem(STORAGE_KEY);
-                    return raw ? JSON.parse(raw) : {};
-                } catch(e) { return {}; }
-            }
-            
-            function saveAll(data) {
-                try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
-            }
-            
-            function getPartner(name) {
-                var all = getAll();
-                return all[name] || {};
-            }
-            
-            function savePartner(name, partnerData) {
-                var all = getAll();
-                all[name] = partnerData;
-                saveAll(all);
-            }
-            
-            function getBothPartners() {
-                var all = getAll();
-                return {
-                    modest: all['modest'] || {},
-                    francesca: all['francesca'] || {}
-                };
-            }
-            
-            return {
-                getPartner: getPartner,
-                savePartner: savePartner,
-                getBothPartners: getBothPartners
-            };
-        })();
+    <!-- Load config FIRST — credentials are injected here -->
+<script src="config.js"></script>
 
-        // ============================================================
-        // Notification system
-        // ============================================================
-        function getNotificationStyles() {
-            return '<style id="notif-style">' +
-                '.notif-overlay{position:fixed;top:0;left:0;width:100%;height:100%;' +
-                'background:rgba(0,0,0,.5);display:flex;justify-content:center;' +
-                'align-items:center;z-index:9999;}' +
-                '.notif-toast{background:#fff;border-radius:8px;padding:18px 28px;' +
-                'box-shadow:0 4px 20px rgba(0,0,0,.25);max-width:380px;width:90%;' +
-                'text-align:center;font-family:"Montserrat",sans-serif;}' +
-                '.notif-toast h4{margin-bottom:6px;font-size:.95rem;}' +
-                '.notif-toast p{color:#555;font-size:.85rem;margin:0;}' +
-                '.notif-success{border-left:4px solid #27ae60;}' +
-                '.notif-success h4{color:#27ae60;}' +
-                '.notif-error{border-left:4px solid #c0392b;}' +
-                '.notif-error h4{color:#c0392b;}' +
-                '.notif-info{border-left:4px solid #2980b9;}' +
-                '.notif-info h4{color:#2980b9;}' +
-                '</style>';
+<!-- DataManager with Google Drive API v3 integration -->
+<script>
+// ─── Configuration (from config.js) ───────────────────────
+const GDRIVE_FOLDER_ID = typeof CONFIG !== 'undefined' ? CONFIG.GDRIVE_FOLDER_ID : '1WL9oAOLX8V6-wY5LD6sCsfl5-cOUzm5k';
+const GOOGLE_CLIENT_ID  = typeof CONFIG !== 'undefined' ? CONFIG.GOOGLE_CLIENT_ID : '1WL9oAOLX8V6-wY5LD6sCsfl5-cOUzm5k';
+const GOOGLE_API_KEY    = typeof CONFIG !== 'undefined' ? CONFIG.GOOGLE_API_KEY : 'AIzaSyAA-2q08YBXVdeHnWvifljAJ3L9mhot1g0';
+
+// ─── Google Auth State ───────────────────────────────────────
+let googleTokenClient = null;
+let currentUser       = null;
+let isSignedIn        = false;
+let accessToken      = null;
+
+// ─── Auto-save timer ────────────────────────────────────────
+let autoSaveTimer     = null;
+let autoSaveInterval  = 30000; // 30 seconds
+
+// ─── Notification helpers (same style as original) ──────────
+function getNotificationStyles() {
+    return `<style>
+        .notification {{ position: fixed; top: 20px; right: 20px; padding: 12px 20px;
+            border-radius: 6px; font-family: 'Montserrat', sans-serif; font-size: 0.85rem;
+            z-index: 9999; box-shadow: 0 4px 15px rgba(0,0,0,0.15); max-width: 300px; }}
+        .notification.success {{ background: #d5f4e6; color: #27ae60; }}
+        .notification.error   {{ background: #fde8e8; color: #c0392b; }}
+        .notification.info    {{ background: #e8f4fd; color: #2980b9; }}
+    </style>`;
+}
+
+function showNotification(msg, type) {
+    const existing = document.querySelector('.notification');
+    if (existing) existing.remove();
+    const el = document.createElement('div');
+    el.className = 'notification ' + type;
+    el.textContent = msg;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 4000);
+}
+
+// ─── Sync Status helpers ─────────────────────────────────────
+function showSync(label, cls) {
+    const ss = document.getElementById('syncStatus');
+    const dot = ss ? ss.querySelector('.dot') : null;
+    const txt = document.getElementById('syncText');
+    if (!ss) return;
+    ss.classList.add('visible');
+    if (dot) { dot.className = 'dot ' + cls; }
+    if (txt) txt.textContent = label;
+}
+
+function hideSync() {
+    const ss = document.getElementById('syncStatus');
+    if (ss) ss.classList.remove('visible');
+}
+
+// ─── Google Sign-In ─────────────────────────────────────────
+function initGoogleAuth() {
+    if (typeof google !== 'undefined' && google.accounts && GOOGLE_CLIENT_ID) {
+        google.accounts.id.initialize({
+            client_id: GOOGLE_CLIENT_ID,
+            callback: handleCredentialResponse,
+        });
+        renderGoogleSignInButton();
+    }
+}
+
+function renderGoogleSignInButton() {
+    const btn = document.getElementById('googleSignInBtn');
+    if (!btn) return;
+    google.accounts.id.renderButton(btn, {
+        theme: 'filled_black',
+        size: 'medium',
+        text: 'signin_with',
+        shape: 'rectangular',
+    });
+}
+
+function handleCredentialResponse(response) {
+    // Decode JWT to get user info
+    const payload = JSON.parse(atob(response.credential.split('.')[1]));
+    currentUser  = payload;
+    isSignedIn   = true;
+    showSync('Signed in as ' + (currentUser.name || currentUser.email), 'saved');
+    showNotification('Signed in as ' + (currentUser.name || currentUser.email), 'success');
+    setTimeout(hideSync, 3000);
+
+    // Trigger Drive token fetch
+    if (googleTokenClient) {
+        googleTokenClient.callback = handleTokenResponse;
+        googleTokenClient.requestAccessToken();
+    }
+
+    // Load progress from Drive
+    loadDriveProgress();
+}
+
+function handleTokenResponse(resp) {
+    if (resp.access_token) {
+        accessToken = resp.access_token;
+        startAutoSave();
+    }
+}
+
+// ─── DataManager (modest-specific) ──────────────────────────
+const DataManager = {
+    _localKey: 'modest_form_data_v2',
+
+    getPartner(name) {
+        try {
+            const raw = localStorage.getItem(this._localKey);
+            return raw ? JSON.parse(raw) : {};
+        } catch { return {}; }
+    },
+
+    savePartner(name, data) {
+        try { localStorage.setItem(this._localKey, JSON.stringify(data)); } catch {}
+    },
+
+    clear(name) {
+        try { localStorage.removeItem(this._localKey); } catch {}
+    }
+};
+
+// ─── Form data collection ───────────────────────────────────
+function collectFormData(form) {
+    const fd   = new FormData(form);
+    const data = {};
+    for (let [k, v] of fd.entries()) { data[k] = v; }
+    const stored = DataManager.getPartner('modest');
+    if (stored._submitted)    data._submitted    = stored._submitted;
+    if (stored._submittedAt) data._submittedAt = stored._submittedAt;
+    return data;
+}
+
+function validateForm(form) {
+    const required = form.querySelectorAll('[required]');
+    let valid = true;
+    required.forEach(f => {
+        if (!f.value.trim()) { f.classList.add('error'); valid = false; }
+        else f.classList.remove('error');
+    });
+    return valid;
+}
+
+// ─── Google Drive: Upload progress JSON ─────────────────────
+async function saveProgressToDrive(data) {
+    if (!accessToken || !GDRIVE_FOLDER_ID) return;
+
+    showSync('Saving to Google Drive...', 'syncing');
+    const filename = 'modest_progress_' + new Date().toISOString().slice(0, 10) + '.json';
+    const content  = JSON.stringify(data, null, 2);
+    const blob     = new Blob([content], { type: 'application/json' });
+
+    try {
+        // Check if an upload for today already exists and delete it
+        const listResp = await fetch(
+            'https://www.googleapis.com/drive/v3/files?q=name+contains+%27modest_progress%27+and+%27' + GDRIVE_FOLDER_ID + '%27+in+parents',
+            { headers: { Authorization: 'Bearer ' + accessToken } }
+        );
+        if (listResp.ok) {
+            const list = await listResp.json();
+            for (const f of (list.files || [])) {
+                await fetch('https://www.googleapis.com/drive/v3/files/' + f.id, {
+                    method: 'DELETE',
+                    headers: { Authorization: 'Bearer ' + accessToken }
+                });
+            }
         }
 
-        function showNotification(message, type, duration) {
-            if (document.getElementById('notif-style')) {} else {
-                document.head.innerHTML += getNotificationStyles();
-            }
-            var icon = type === 'success' ? '&#10004; ' : type === 'error' ? '&#10006; ' : '&#8505; ';
-            var title = type === 'success' ? 'Success' : type === 'error' ? 'Error' : 'Info';
-            var overlay = document.createElement('div');
-            overlay.className = 'notif-overlay';
-            overlay.innerHTML = '<div class="notif-toast notif-' + type + '">' +
-                '<h4>' + icon + title + '</h4>' +
-                '<p>' + message + '</p></div>';
-            document.body.appendChild(overlay);
-            overlay.addEventListener('click', function() { dismiss(); });
-            var timer = duration || 3500;
-            var t = setTimeout(dismiss, timer);
-            function dismiss() {
-                clearTimeout(t);
-                if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
-            }
-        }
+        // Upload new file
+        const metadata = {
+            name: filename,
+            parents: [GDRIVE_FOLDER_ID],
+            mimeType: 'application/json',
+        };
+        const form = new FormData();
+        form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+        form.append('file', blob);
 
-        // ============================================================
-        // Form helpers
-        // ============================================================
-        function collectFormData(form) {
-            var data = {};
-            for (var i = 0; i < form.elements.length; i++) {
-                var el = form.elements[i];
-                if (el.name) {
-                    if (el.type === 'radio') {
-                        if (el.checked) data[el.name] = el.value;
-                    } else if (el.type === 'checkbox') {
-                        if (!data[el.name]) data[el.name] = [];
-                        if (el.checked) data[el.name].push(el.value);
-                    } else {
-                        data[el.name] = el.value;
-                    }
-                }
-            }
-            return data;
-        }
+        const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+            method: 'POST',
+            headers: { Authorization: 'Bearer ' + accessToken },
+            body: form,
+        });
 
-        function validateForm(form) {
-            var required = ['history_q1','history_q2','history_q3','history_q4','history_q5',
-                'history_q6','history_q7','history_q8','history_q9','history_q10',
-                'eval_q1','eval_q2','eval_q3','eval_q4','eval_q5','eval_q6','eval_q7','eval_q8',
-                'expect_q1','expect_q2','expect_q3','expect_q4','expect_q5','expect_q6',
-                'reasons_q1','reasons_q2','reasons_q3','reasons_q4',
-                'spiritual_q1','spiritual_q2','spiritual_q3','spiritual_q4','spiritual_q5',
-                'spiritual_q6','spiritual_q7','spiritual_q8','spiritual_q9','spiritual_q10',
-                'spiritual_q11','spiritual_q12','spiritual_q13','spiritual_q14','spiritual_q15',
-                'love_helping','love_time','love_words','love_touch','love_concern',
-                'love_loyal','love_gifts','love_childhood','love_down','love_argument','love_show',
-                'conflict_q1','conflict_q2','conflict_q3','conflict_q4','conflict_q5',
-                'conflict_q6','conflict_q7','conflict_q8',
-                'finance_q1','finance_q2','finance_q3','finance_q4','finance_q5',
-                'final_q1','final_q2','final_q3','final_q4','final_q5'];
-            var chars = ['char_patient','char_accepting','char_stubborn','char_annoyed',
-                'char_resentful','char_forgiving','char_dominant','char_selfcentered',
-                'char_gentle','char_listener','char_reliable','char_affectionate'];
-            var allRequired = required.concat(chars);
-            var valid = true;
-            for (var i = 0; i < allRequired.length; i++) {
-                var field = form.elements[allRequired[i]];
-                if (field && (field.value === '' || field.value === null)) {
-                    field.classList.add('error');
-                    valid = false;
-                } else if (field) {
-                    field.classList.remove('error');
-                }
-            }
-            return valid;
+        if (res.ok) {
+            showSync('Saved to Google Drive ✓', 'saved');
+            setTimeout(hideSync, 3000);
+            return true;
         }
-        // expose to global scope
-        window.DataManager = DataManager;
-    </script>
+    } catch (e) {
+        console.warn('Drive save failed:', e);
+    }
+    showSync('Save failed — saved locally', 'error');
+    setTimeout(hideSync, 3000);
+    return false;
+}
+
+async function loadDriveProgress() {
+    if (!accessToken || !GDRIVE_FOLDER_ID) return;
+    try {
+        const resp = await fetch(
+            'https://www.googleapis.com/drive/v3/files?q=name+contains+%27modest_progress%27+and+%27' + GDRIVE_FOLDER_ID + '%27+in+parents&orderBy=createdTime+desc&pageSize=1',
+            { headers: { Authorization: 'Bearer ' + accessToken } }
+        );
+        if (!resp.ok) return;
+        const data = await resp.json();
+        const file = data.files && data.files[0];
+        if (!file) return;
+
+        const fileResp = await fetch(
+            'https://www.googleapis.com/drive/v3/files/' + file.id + '?alt=media',
+            { headers: { Authorization: 'Bearer ' + accessToken } }
+        );
+        if (!fileResp.ok) return;
+        const saved = await fileResp.json();
+
+        // Merge saved data into form
+        const form = document.getElementById('counselingForm');
+        if (!form) return;
+        for (let [key, val] of Object.entries(saved)) {
+            if (key.startsWith('_')) continue;
+            const field = form.elements[key];
+            if (field) field.value = val;
+        }
+        showNotification('Progress loaded from Google Drive', 'info');
+    } catch (e) {
+        console.warn('Drive load failed:', e);
+    }
+}
+
+// ─── Auto-save ──────────────────────────────────────────────
+function startAutoSave() {
+    if (autoSaveTimer) clearInterval(autoSaveTimer);
+    autoSaveTimer = setInterval(() => {
+        const form = document.getElementById('counselingForm');
+        if (!form) return;
+        const data = collectFormData(form);
+        DataManager.savePartner('modest', data);
+        saveProgressToDrive(data);
+    }, autoSaveInterval);
+}
+
+// ─── Overridden saveProgress ─────────────────────────────────
+function saveProgress() {
+    const form = document.getElementById('counselingForm');
+    const data = collectFormData(form);
+    DataManager.savePartner('modest', data);
+    saveProgressToDrive(data);
+    showNotification('Progress saved!', 'success');
+}
+
+// ─── Overridden handleSubmit ────────────────────────────────
+function handleSubmit(event) {
+    event.preventDefault();
+    const form = event.target;
+    if (!validateForm(form)) {
+        showNotification('Please fill in all required fields.', 'error');
+        return;
+    }
+    const data = collectFormData(form);
+    data._submitted    = true;
+    data._submittedAt  = new Date().toISOString();
+    DataManager.savePartner('modest', data);
+    showNotification('Your responses have been submitted!', 'success');
+    saveProgressToDrive(data);
+    setTimeout(() => { window.location.href = 'index.html'; }, 2000);
+}
+
+// ─── DOMContentLoaded ───────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+    loadSavedData();
+    updateStatus();
+    initGoogleAuth();
+
+    // Trigger Drive token silently on page load
+    if (GOOGLE_CLIENT_ID && typeof google !== 'undefined') {
+        googleTokenClient = google.accounts.oauth2.initTokenClient({
+            client_id: GOOGLE_CLIENT_ID,
+            scope: 'https://www.googleapis.com/auth/drive.file',
+            callback: handleTokenResponse,
+        });
+        if (currentUser) {
+            googleTokenClient.requestAccessToken();
+        }
+    }
+});
+</script>
+
     <script>
         document.head.innerHTML += getNotificationStyles();
         
@@ -1056,23 +1251,17 @@
             event.preventDefault();
             
             const form = event.target;
+            if (!validateForm(form)) {
+                showNotification('Please fill in all required fields.', 'error');
+                return;
+            }
             
             const data = collectFormData(form);
-            data._submitted = true;
-            data._submittedAt = new Date().toISOString();
-            
             DataManager.savePartner('modest', data);
             showNotification('Your responses have been submitted successfully!', 'success');
             
-            // Also store a mirror for the results page: modest_submitted and francesca_submitted
-            try {
-                var all = JSON.parse(localStorage.getItem('marriageCounseling') || '{}');
-                all['modest_submitted'] = all['modest'] || {};
-                localStorage.setItem('marriageCounseling', JSON.stringify(all));
-            } catch(e) {}
-            
             setTimeout(() => {
-                window.location.href = 'results.html';
+                window.location.href = 'index.html';
             }, 2000);
         }
         
@@ -1082,7 +1271,6 @@
         });
     </script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"8607d2a720d14b038279025b2b5a82e5","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
-<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"8607d2a720d14b038279025b2b5a82e5","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
-<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"8607d2a720d14b038279025b2b5a82e5","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"8607d2a720d14b038279025b2b5a82e5","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>
 </html>
