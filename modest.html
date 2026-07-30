@@ -916,9 +916,13 @@
 <!-- DataManager with Google Drive API v3 integration -->
 <script>
 // ─── Configuration (from config.js) ───────────────────────
-const GDRIVE_FOLDER_ID = typeof CONFIG !== 'undefined' ? CONFIG.GDRIVE_FOLDER_ID : '1WL9oAOLX8V6-wY5LD6sCsfl5-cOUzm5k';
-const GOOGLE_CLIENT_ID  = typeof CONFIG !== 'undefined' ? CONFIG.GOOGLE_CLIENT_ID : '1WL9oAOLX8V6-wY5LD6sCsfl5-cOUzm5k';
+// IMPORTANT: Set up your config.js with valid credentials from Google Cloud Console
+const GOOGLE_CLIENT_ID  = typeof CONFIG !== 'undefined' ? CONFIG.GOOGLE_CLIENT_ID : '88174880511-m9jq7tknona72s1828r6rarge4863rtm.apps.googleusercontent.com';
+const GDRIVE_FOLDER_ID  = typeof CONFIG !== 'undefined' ? CONFIG.GDRIVE_FOLDER_ID : '1WL9oAOLX8V6-wY5LD6sCsfl5-cOUzm5k';
 const GOOGLE_API_KEY    = typeof CONFIG !== 'undefined' ? CONFIG.GOOGLE_API_KEY : 'AIzaSyAA-2q08YBXVdeHnWvifljAJ3L9mhot1g0';
+
+// OAuth scopes for Google Drive access - must include drive.file for saving
+const SCOPES = 'https://www.googleapis.com/auth/drive.file';
 
 // ─── Google Auth State ───────────────────────────────────────
 let googleTokenClient = null;
@@ -1019,20 +1023,50 @@ function handleTokenResponse(resp) {
 // ─── DataManager (modest-specific) ──────────────────────────
 const DataManager = {
     _localKey: 'modest_form_data_v2',
+    _francescaKey: 'francesca_progress',
+
+    // Get all data (for results page)
+    getData() {
+        const allData = {};
+        try {
+            const modestRaw = localStorage.getItem(this._localKey);
+            if (modestRaw) {
+                allData.modest = JSON.parse(modestRaw);
+            }
+        } catch (e) {
+            console.error('Error reading modest data:', e);
+        }
+        try {
+            const francescaRaw = localStorage.getItem(this._francescaKey);
+            if (francescaRaw) {
+                allData.francesca = JSON.parse(francescaRaw);
+            }
+        } catch (e) {
+            console.error('Error reading francesca data:', e);
+        }
+        return allData;
+    },
 
     getPartner(name) {
         try {
-            const raw = localStorage.getItem(this._localKey);
+            const key = name === 'francesca' ? this._francescaKey : this._localKey;
+            const raw = localStorage.getItem(key);
             return raw ? JSON.parse(raw) : {};
         } catch { return {}; }
     },
 
     savePartner(name, data) {
-        try { localStorage.setItem(this._localKey, JSON.stringify(data)); } catch {}
+        try { 
+            const key = name === 'francesca' ? this._francescaKey : this._localKey;
+            localStorage.setItem(key, JSON.stringify(data)); 
+        } catch {}
     },
 
     clear(name) {
-        try { localStorage.removeItem(this._localKey); } catch {}
+        try { 
+            const key = name ? (name === 'francesca' ? this._francescaKey : this._localKey) : this._localKey;
+            localStorage.removeItem(key); 
+        } catch {}
     }
 };
 
@@ -1272,5 +1306,7 @@ document.addEventListener('DOMContentLoaded', function() {
     </script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"8607d2a720d14b038279025b2b5a82e5","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"8607d2a720d14b038279025b2b5a82e5","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"8607d2a720d14b038279025b2b5a82e5"}' crossorigin="anonymous"></script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"8607d2a720d14b038279025b2b5a82e5"}' crossorigin="anonymous"></script>
 </body>
 </html>
